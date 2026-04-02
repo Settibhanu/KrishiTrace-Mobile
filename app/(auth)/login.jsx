@@ -10,21 +10,22 @@ import { Colors } from '../../constants/Colors';
 
 export default function LoginScreen() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [mobile, setMobile] = useState('');
   const [password, setPassword] = useState('');
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!email || !password) {
-      Alert.alert('Missing Fields', 'Please enter email and password.');
+    if (!mobile || !password) {
+      Alert.alert('Missing Fields', 'Please enter mobile number and password.');
       return;
     }
     setLoading(true);
     try {
-      const res = await login(email.trim(), password);
+      const res = await login(mobile.trim(), password);
       const token = res.data?.token || res.data?.data?.token;
       if (token) {
         await AsyncStorage.setItem('krishitrace_token', token);
+        await AsyncStorage.setItem('krishitrace_mobile', mobile.trim());
         router.replace('/(tabs)/dashboard');
       } else {
         Alert.alert('Login Failed', 'Invalid credentials. Please try again.');
@@ -56,14 +57,14 @@ export default function LoginScreen() {
           <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>Sign in to your farmer account</Text>
 
-          <Text style={styles.label}>Email Address</Text>
+          <Text style={styles.label}>Mobile Number</Text>
           <TextInput
             style={styles.input}
-            placeholder="farmer@example.com"
+            placeholder="9000000001"
             placeholderTextColor={Colors.textMuted}
-            value={email}
-            onChangeText={setEmail}
-            keyboardType="email-address"
+            value={mobile}
+            onChangeText={setMobile}
+            keyboardType="phone-pad"
             autoCapitalize="none"
           />
 
@@ -99,10 +100,14 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Footer */}
-        <Text style={styles.footer}>
-          Connecting to krishitrace-one.vercel.app
-        </Text>
+        {/* Footer — demo credentials hint */}
+        <View style={styles.demoBox}>
+          <Text style={styles.demoTitle}>Demo Credentials</Text>
+          <Text style={styles.demoText}>Mobile: 9000000001</Text>
+          <Text style={styles.demoText}>Password: demo1234</Text>
+        </View>
+
+        <Text style={styles.footer}>Connecting to krishitrace-one.vercel.app</Text>
       </ScrollView>
     </KeyboardAvoidingView>
   );
@@ -155,9 +160,20 @@ const styles = StyleSheet.create({
   btnDisabled: { opacity: 0.6 },
   btnText:     { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  linkBtn: { alignItems: 'center', marginTop: 16 },
-  linkText: { color: Colors.textSecondary, fontSize: 14 },
+  linkBtn:    { alignItems: 'center', marginTop: 16 },
+  linkText:   { color: Colors.textSecondary, fontSize: 14 },
   linkAccent: { color: Colors.primary, fontWeight: '600' },
 
-  footer: { color: Colors.textMuted, fontSize: 11, textAlign: 'center', marginTop: 24 },
+  demoBox: {
+    marginTop: 20,
+    backgroundColor: Colors.primary + '15',
+    borderRadius: 12,
+    padding: 14,
+    borderWidth: 1,
+    borderColor: Colors.primary + '40',
+  },
+  demoTitle: { color: Colors.primary, fontSize: 12, fontWeight: '700', marginBottom: 4 },
+  demoText:  { color: Colors.textSecondary, fontSize: 12 },
+
+  footer: { color: Colors.textMuted, fontSize: 11, textAlign: 'center', marginTop: 16 },
 });

@@ -119,6 +119,10 @@ export default function DashboardScreen() {
           { icon: '➕', label: 'Add Harvest',  route: '/(tabs)/harvest' },
           { icon: '📷', label: 'Scan QR',      route: '/(tabs)/scan'    },
           { icon: '📈', label: 'Market',        route: '/(tabs)/market'  },
+          { icon: '🔗', label: 'Ledger',        route: '/(tabs)/ledger'  },
+          { icon: '📡', label: 'IoT Sensors',  route: '/(tabs)/iot'     },
+          { icon: '📊', label: 'Reports',       route: '/(tabs)/reports' },
+          { icon: '🗺️',  label: 'Farm Map',     route: '/(tabs)/gis'     },
           { icon: '👤', label: 'Profile',       route: '/(tabs)/profile' },
         ].map(({ icon, label, route }) => (
           <TouchableOpacity

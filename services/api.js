@@ -21,8 +21,8 @@ api.interceptors.request.use(async (config) => {
 });
 
 // ── AUTH ──────────────────────────────────────────────
-export const login = (email, password) =>
-  api.post('/auth/login', { email, password });
+export const login = (mobile, password) =>
+  api.post('/auth/login', { mobile, password });
 
 export const register = (data) =>
   api.post('/auth/register', data);
@@ -39,13 +39,14 @@ export const getQRData = (id) => api.get(`/qr/${id}`);
 export const getMarketPrices = () => api.get('/market');
 
 // ── IOT ───────────────────────────────────────────────
-export const getIoTReadings = () => api.get('/iot');
+export const getIoTReadings = () => api.get('/iot/alerts');
+export const getIoTAlerts   = () => api.get('/iot/alerts');
 
 // ── LEDGER ────────────────────────────────────────────
 export const getLedger = () => api.get('/ledger');
 
 // ── REPORTS ───────────────────────────────────────────
-export const getReports = () => api.get('/reports');
+export const getReports = () => api.get('/reports/summary');
 
 // ── GIS ───────────────────────────────────────────────
 export const getGISData = () => api.get('/gis');
