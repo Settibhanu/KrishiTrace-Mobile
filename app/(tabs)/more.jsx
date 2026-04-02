@@ -17,6 +17,7 @@ export default function MoreScreen() {
   const router = useRouter();
 
   const features = [
+    { icon: '🔐', title: 'Blockchain Explorer', subtitle: 'Visualize chain, tamper tests & block details', color: '#10b981',  route: '/(tabs)/blockchain' },
     { icon: '📈', title: 'Market Prices',     subtitle: 'Live mandi rates for all crops',          color: Colors.gold,    route: '/(tabs)/market'  },
     { icon: '🔗', title: 'Blockchain Ledger', subtitle: 'Immutable supply chain records',           color: Colors.blue,    route: '/(tabs)/ledger'  },
     { icon: '📡', title: 'IoT Sensors',       subtitle: 'Real-time temperature & humidity alerts',  color: Colors.primary, route: '/(tabs)/iot'     },

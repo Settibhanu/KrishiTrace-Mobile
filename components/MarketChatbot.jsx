@@ -1,11 +1,10 @@
 import React, { useState, useRef, useEffect } from 'react';
 import {
   View, Text, TextInput, TouchableOpacity, StyleSheet,
-  Modal, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform
+  Modal, FlatList, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView
 } from 'react-native';
 import api from '../services/api';
 import { Colors } from '../constants/Colors';
-import Icon from '@expo/vector-icons/MaterialCommunityIcons';
 
 export default function MarketChatbot({ visible, onClose, initialCropContext = null }) {
   const [messages, setMessages] = useState([]);
@@ -52,14 +51,14 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
           {/* Header */}
           <View style={styles.header}>
             <View style={styles.headerIcon}>
-              <Icon name="robot-outline" size={24} color={Colors.primary} />
+              <Text style={{ fontSize: 20 }}>🤖</Text>
             </View>
             <View>
               <Text style={styles.title}>Market Advisor</Text>
               <Text style={styles.subtitle}>AI Pricing Assistant</Text>
             </View>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
-              <Icon name="close" size={24} color={Colors.textSecondary} />
+              <Text style={{ fontSize: 24, color: Colors.textSecondary }}>×</Text>
             </TouchableOpacity>
           </View>
 
@@ -74,7 +73,7 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
               <View style={[styles.msgRow, item.role === 'user' ? styles.msgRight : styles.msgLeft]}>
                 {item.role === 'bot' && (
                   <View style={styles.avatarBot}>
-                    <Icon name="robot-outline" size={16} color="#fff" />
+                    <Text style={{ fontSize: 14 }}>🤖</Text>
                   </View>
                 )}
                 <View style={[styles.bubble, item.role === 'user' ? styles.bubbleUser : styles.bubbleBot]}>
@@ -87,7 +86,7 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
             ListFooterComponent={asking ? (
               <View style={[styles.msgRow, styles.msgLeft]}>
                  <View style={styles.avatarBot}>
-                    <Icon name="robot-outline" size={16} color="#fff" />
+                    <Text style={{ fontSize: 14 }}>🤖</Text>
                   </View>
                  <View style={[styles.bubble, styles.bubbleBot, { paddingVertical: 14 }]}>
                     <ActivityIndicator size="small" color={Colors.primary} />
@@ -122,7 +121,7 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
               onPress={() => sendMessage()} 
               disabled={asking || !input.trim()}
             >
-              <Icon name="send" size={20} color="#fff" />
+              <Text style={{ fontSize: 20, color: '#fff' }}>➤</Text>
             </TouchableOpacity>
           </View>
         </KeyboardAvoidingView>
@@ -130,9 +129,6 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
     </Modal>
   );
 }
-
-// Ensure ScrollView is imported
-import { ScrollView } from 'react-native';
 
 const styles = StyleSheet.create({
   modalOverlay: { flex: 1, backgroundColor: '#000000bb', justifyContent: 'flex-end' },
