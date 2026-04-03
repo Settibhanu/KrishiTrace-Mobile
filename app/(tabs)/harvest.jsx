@@ -2,13 +2,14 @@ import { useEffect, useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, FlatList, TouchableOpacity,
   Modal, TextInput, Alert, ActivityIndicator, RefreshControl,
-  Animated, ScrollView,
+  Animated, ScrollView, Easing,
 } from 'react-native';
 import { getHarvests, addHarvest } from '../../services/api';
 import api from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import MarketChatbot from '../../components/MarketChatbot';
 import { useTranslation } from 'react-i18next';
+import blockchain from '../../services/blockchain';
 
 const CROPS = [
   'Tomato', 'Potato', 'Onion', 'Rice', 'Wheat', 'Maize', 'Mango', 
@@ -78,6 +79,11 @@ export default function HarvestScreen() {
   const [transcript, setTranscript] = useState('');
   const [parsing, setParsing]       = useState(false);
   const pulseAnim = useRef(new Animated.Value(1)).current;
+
+  // Mining animation states
+  const [miningVisible, setMiningVisible] = useState(false);
+  const miningSpinAnim = useRef(new Animated.Value(0)).current;
+  const [miningHash, setMiningHash] = useState('');
 
   const [form, setForm] = useState({
     cropType: '', location: '', quantity: '', unit: 'kg',
@@ -161,25 +167,81 @@ export default function HarvestScreen() {
 
   const set = (k) => (v) => setForm((f) => ({ ...f, [k]: v }));
 
+  // Mining animation helpers
+  const showMiningAnimation = () => {
+    setMiningVisible(true);
+    miningSpinAnim.setValue(0);
+    Animated.loop(
+      Animated.timing(miningSpinAnim, { toValue: 1, duration: 1000, easing: Easing.linear, useNativeDriver: true })
+    ).start();
+    const chars = '0123456789abcdef';
+    const interval = setInterval(() => {
+      let h = '';
+      for (let i = 0; i < 64; i++) h += chars[Math.floor(Math.random() * 16)];
+      setMiningHash(h);
+    }, 50);
+    return interval;
+  };
+
+  const hideMiningAnimation = (interval) => {
+    clearInterval(interval);
+    miningSpinAnim.stopAnimation();
+    setMiningVisible(false);
+  };
+
   const handleAdd = async () => {
     if (!form.cropType || !form.quantity || !form.farmerPayout || !form.finalConsumerPrice) {
       Alert.alert('Missing Fields', 'Crop, quantity, farmer payout and consumer price are required.');
       return;
     }
     setSubmitting(true);
+    setModal(false);
+
+    // Try API call (optional — works offline too)
+    let harvestId = Date.now().toString();
     try {
-      await addHarvest({
+      const res = await addHarvest({
         ...form,
         quantity:           Number(form.quantity),
         farmerPayout:       Number(form.farmerPayout),
         finalConsumerPrice: Number(form.finalConsumerPrice),
         transportCost:      Number(form.transportCost || 0),
       });
-      setModal(false);
-      setForm({ cropType: '', location: '', quantity: '', unit: 'kg', farmerPayout: '', finalConsumerPrice: '', transportCost: '', notes: '' });
+      harvestId = res.data?._id || res.data?.data?._id || harvestId;
       load();
     } catch (err) {
-      Alert.alert('Error', err?.response?.data?.message || 'Failed to add harvest.');
+      console.log('API unavailable, recording locally on blockchain only:', err?.message);
+    }
+
+    // Show mining animation
+    const interval = showMiningAnimation();
+
+    try {
+      // Write block to local blockchain (always runs)
+      const { block, chainLength } = await blockchain.addBlock({
+        type: 'HARVEST_CREATED',
+        harvestId,
+        cropType: form.cropType,
+        quantity: Number(form.quantity),
+        unit: form.unit,
+        location: form.location,
+        farmerPayout: Number(form.farmerPayout),
+        finalConsumerPrice: Number(form.finalConsumerPrice),
+      });
+
+      // Keep mining animation for at least 2 seconds
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      hideMiningAnimation(interval);
+
+      setForm({ cropType: '', location: '', quantity: '', unit: 'kg', farmerPayout: '', finalConsumerPrice: '', transportCost: '', notes: '' });
+
+      Alert.alert(
+        '⛏️ Block Mined!',
+        `Block #${block.index} added to chain\nHash: ${block.hash.slice(0, 16)}...\nTotal blocks: ${chainLength}`
+      );
+    } catch (err) {
+      hideMiningAnimation(interval);
+      Alert.alert('Error', 'Failed to mine block: ' + (err?.message || 'Unknown error'));
     } finally {
       setSubmitting(false);
     }
@@ -361,6 +423,20 @@ export default function HarvestScreen() {
       >
         <Text style={styles.fabIcon}>🤖</Text>
       </TouchableOpacity>
+
+      {/* Mining Animation Overlay */}
+      {miningVisible && (
+        <View style={styles.miningOverlay}>
+          <View style={styles.miningCard}>
+            <Animated.Text style={[styles.miningIcon, { transform: [{ rotate: miningSpinAnim.interpolate({ inputRange: [0, 1], outputRange: ['0deg', '360deg'] }) }] }]}>⛏️</Animated.Text>
+            <Text style={styles.miningTitle}>Mining Block...</Text>
+            <Text style={styles.miningSubtitle}>Computing SHA-256 hash</Text>
+            <View style={styles.miningHashBox}>
+              <Text style={styles.miningHashText} numberOfLines={2}>{miningHash}</Text>
+            </View>
+          </View>
+        </View>
+      )}
     </View>
   );
 }
@@ -458,5 +534,23 @@ const styles = StyleSheet.create({
   },
   fabIcon: {
     fontSize: 28,
-  }
+  },
+
+  // Mining overlay
+  miningOverlay: {
+    ...StyleSheet.absoluteFillObject, backgroundColor: '#000000cc',
+    justifyContent: 'center', alignItems: 'center', zIndex: 999,
+  },
+  miningCard: {
+    backgroundColor: Colors.bgCard, borderRadius: 24, padding: 32,
+    alignItems: 'center', width: '80%', borderWidth: 1, borderColor: Colors.primary + '40',
+  },
+  miningIcon: { fontSize: 48, marginBottom: 16 },
+  miningTitle: { color: Colors.textPrimary, fontSize: 20, fontWeight: '800', marginBottom: 4 },
+  miningSubtitle: { color: Colors.textSecondary, fontSize: 13, marginBottom: 16 },
+  miningHashBox: {
+    backgroundColor: Colors.bgInput, borderRadius: 10, padding: 12,
+    width: '100%', borderWidth: 1, borderColor: Colors.border,
+  },
+  miningHashText: { color: Colors.primary, fontSize: 10, fontFamily: 'monospace', textAlign: 'center' },
 });

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import {
   View, Text, StyleSheet, TouchableOpacity,
   ActivityIndicator, ScrollView, Alert,
@@ -6,13 +6,20 @@ import {
 import { CameraView, useCameraPermissions } from 'expo-camera';
 import { getQRData } from '../../services/api';
 import { Colors } from '../../constants/Colors';
+import blockchain from '../../services/blockchain';
 
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
-  const [scanning, setScanning] = useState(false);
-  const [result, setResult] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [scanned, setScanned] = useState(false);
+  const [scanning, setScanning]   = useState(false);
+  const [result, setResult]       = useState(null);
+  const [loading, setLoading]     = useState(false);
+  const [scanned, setScanned]     = useState(false);
+  const [chainStatus, setChainStatus] = useState(null);
+
+  // Load chain validation on mount
+  useEffect(() => {
+    blockchain.getChainStats().then(setChainStatus).catch(() => {});
+  }, []);
 
   const handleBarcode = async ({ data }) => {
     if (scanned || loading) return;
@@ -63,6 +70,30 @@ export default function ScanScreen() {
           <Text style={styles.resultSubtitle}>Supply chain verified in KrishiTrace records</Text>
         </View>
 
+        {/* Blockchain Verification */}
+        {chainStatus && (
+          <View style={[
+            styles.chainBanner,
+            { backgroundColor: chainStatus.isValid ? Colors.success + '15' : Colors.error + '15',
+              borderColor: chainStatus.isValid ? Colors.success + '40' : Colors.error + '40' }
+          ]}>
+            <Text style={{ fontSize: 24, marginRight: 10 }}>
+              {chainStatus.isValid ? '✅' : '❌'}
+            </Text>
+            <View style={{ flex: 1 }}>
+              <Text style={[styles.chainTitle, {
+                color: chainStatus.isValid ? Colors.success : Colors.error
+              }]}>
+                {chainStatus.isValid ? 'Blockchain Verified' : 'Chain Integrity Broken'}
+              </Text>
+              <Text style={styles.chainSub}>
+                {chainStatus.totalBlocks} blocks · {chainStatus.harvestBlocks} harvests on chain
+              </Text>
+            </View>
+          </View>
+        )}
+
+        {/* Batch Info */}
         <Section title="🌾 Crop Information">
           <Row label="Crop" value={result.cropType || result.crop || '—'} />
           <Row label="Quantity" value={`${result.quantity || '—'} ${result.unit || 'kg'}`} />
@@ -205,4 +236,11 @@ const styles = StyleSheet.create({
 
   scanAgainBtn: { backgroundColor: Colors.primary, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 12 },
   scanAgainText: { color: '#fff', fontWeight: '700', fontSize: 16 },
+
+  chainBanner: {
+    flexDirection: 'row', alignItems: 'center', padding: 14,
+    borderRadius: 14, borderWidth: 1, marginBottom: 20,
+  },
+  chainTitle: { fontSize: 15, fontWeight: '700' },
+  chainSub: { color: Colors.textSecondary, fontSize: 12, marginTop: 2 },
 });

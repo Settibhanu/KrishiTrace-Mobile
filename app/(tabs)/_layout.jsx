@@ -35,6 +35,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="profile"   options={{ title: t('tabs.profile'), tabBarIcon: ({ focused }) => <TabIcon icon="👤" focused={focused} /> }} />
 
       {/* ── Hidden Tabs (navigable but not in tab bar) ── */}
+      <Tabs.Screen name="blockchain" options={{ href: null }} />
       <Tabs.Screen name="market"  options={{ href: null }} />
       <Tabs.Screen name="ledger"  options={{ href: null }} />
       <Tabs.Screen name="iot"     options={{ href: null }} />
