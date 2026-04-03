@@ -1,6 +1,3 @@
-// KrishiTrace API Service
-// All calls go to the live Vercel backend
-
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
