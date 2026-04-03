@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "KrishiTrace",
-    "slug": "krishitrace-mobile-dev",
+    "slug": "KrishiTrace-Mobile",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
@@ -29,8 +29,7 @@
     },
     "web": {
       "favicon": "./assets/favicon.png",
-      "bundler": "metro",
-      "output": "static"
+      "bundler": "metro"
     },
     "plugins": [
       "expo-router",
@@ -44,10 +43,11 @@
     "experiments": {
       "typedRoutes": true
     },
-    "updates": {
-      "enabled": false,
-      "checkAutomatically": "never",
-      "fallbackToCacheTimeout": 0
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "8591f0d7-ae97-47ae-9c79-1035cef93022"
+      }
     }
   }
 }
