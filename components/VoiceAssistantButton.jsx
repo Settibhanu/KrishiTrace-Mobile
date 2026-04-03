@@ -13,7 +13,7 @@ const { width } = Dimensions.get('window');
 /**
  * VoiceAssistantButton is a global floating UI component.
  */
-export default function VoiceAssistantButton() {
+export default function VoiceAssistantButton(props) {
   const { t, i18n } = useTranslation();
   const {
     isActive, setIsActive,
@@ -22,128 +22,133 @@ export default function VoiceAssistantButton() {
     processCommand
   } = useVoiceAssistant();
 
-  const widthAnim = useRef(new Animated.Value(60)).current;
+  const pulseAnim = useRef(new Animated.Value(1)).current;
   const inputRef = useRef(null);
 
-  useEffect(() => {
-    Animated.spring(widthAnim, {
-      toValue: isActive ? width * 0.75 : 60,
-      useNativeDriver: false,
-      friction: 8,
-      tension: 40,
-    }).start();
+  // Use props from TabBar if available
+  const isTabBar = props.isTabBar || !!props.onPress;
 
+  useEffect(() => {
     if (isActive) {
+      Animated.loop(
+        Animated.sequence([
+          Animated.timing(pulseAnim, { toValue: 1.15, duration: 800, useNativeDriver: true }),
+          Animated.timing(pulseAnim, { toValue: 1, duration: 800, useNativeDriver: true }),
+        ])
+      ).start();
       setTimeout(() => inputRef.current?.focus(), 300);
     } else {
+      pulseAnim.stopAnimation();
+      pulseAnim.setValue(1);
       inputRef.current?.blur();
     }
   }, [isActive]);
 
   const handleToggle = () => {
     setIsActive(!isActive);
-  };
-
-  const handleSubmit = () => {
-    processCommand(transcript);
+    // REMOVED: props.onPress(); - we prevent navigation to avoid the white blank screen
   };
 
   return (
-    <View style={styles.outerContainer} pointerEvents="box-none">
-      <Animated.View style={[styles.container, { width: widthAnim }]}>
-        
-        {isActive && !isProcessing && (
-          <TextInput
-            ref={inputRef}
-            style={styles.input}
-            placeholder={t('assistant.placeholder') || "Speak via Wispr Flow..."}
-            placeholderTextColor={Colors.textMuted}
-            value={transcript}
-            onChangeText={setTranscript}
-            onSubmitEditing={handleSubmit}
-            autoFocus={true}
-          />
-        )}
+    <TouchableOpacity 
+      onPress={handleToggle}
+      style={isTabBar ? [styles.tabContainer, props.style] : styles.outerContainer}
+      activeOpacity={0.9}
+    >
+      {/* Hidden input to anchor the system keyboard for Wispr Flow */}
+      <TextInput
+        ref={inputRef}
+        style={styles.hiddenInput}
+        value={transcript}
+        onChangeText={setTranscript}
+        onSubmitEditing={() => processCommand(transcript)}
+        autoFocus={false}
+        blurOnSubmit={true}
+      />
 
-        {isProcessing && (
-          <View style={styles.processing}>
-            <ActivityIndicator size="small" color={Colors.primary} />
-            <Text style={styles.processingText}>{t('assistant.processing') || "Parsing..."}</Text>
-          </View>
-        )}
-
-        <TouchableOpacity 
-          style={[styles.micBtn, isActive && styles.micBtnActive]} 
-          onPress={handleToggle}
-          activeOpacity={0.8}
-        >
+      <Animated.View style={[
+        styles.micContainer, 
+        isActive && styles.micActive,
+        { transform: [{ scale: pulseAnim }] }
+      ]}>
+        {isProcessing ? (
+          <ActivityIndicator color="#fff" />
+        ) : (
           <MaterialCommunityIcons 
-            name={isActive ? "close" : "microphone"} 
-            size={28} 
-            color={isActive ? Colors.textPrimary : "#fff"} 
+            name={isActive ? "dots-horizontal" : "microphone"} 
+            size={isTabBar ? 34 : 30} 
+            color="#fff" 
           />
-        </TouchableOpacity>
-
+        )}
       </Animated.View>
-    </View>
+
+      {isActive && (
+        <View style={[styles.statusBox, isTabBar && styles.tabStatusBox]}>
+          <Text style={styles.statusText}>
+             {isProcessing ? t('assistant.processing') : t('assistant.listening') || 'Listening...'}
+          </Text>
+        </View>
+      )}
+    </TouchableOpacity>
   );
 }
 
 const styles = StyleSheet.create({
   outerContainer: {
     position: 'absolute',
-    bottom: 90, // Above tab bar
-    left: 20,
-    right: 20,
-    alignItems: 'flex-start',
+    bottom: 40,
+    right: 24,
+    alignItems: 'center',
     zIndex: 9999,
   },
-  container: {
-    height: 60,
-    borderRadius: 30,
-    backgroundColor: Colors.bgCard,
-    flexDirection: 'row',
+  tabContainer: {
     alignItems: 'center',
-    padding: 6,
-    borderWidth: 1,
-    borderColor: Colors.border,
-    shadowColor: '#000',
+    justifyContent: 'center',
+    width: 68,
+    height: 68,
+    marginTop: -22,
+  },
+  micContainer: {
+    width: 64,
+    height: 64,
+    borderRadius: 32,
+    backgroundColor: Colors.primary,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: Colors.primary,
     shadowOffset: { width: 0, height: 4 },
     shadowOpacity: 0.3,
     shadowRadius: 6,
     elevation: 8,
   },
-  micBtn: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    backgroundColor: Colors.primary,
-    justifyContent: 'center',
+  micActive: {
+    backgroundColor: Colors.blue,
+    shadowColor: Colors.blue,
+  },
+  hiddenInput: {
+    position: 'absolute',
+    left: -1000, // Off-screen to avoid visual interference
+    top: 0,
+    width: 10,
+    height: 10,
+    opacity: 0.01,
+  },
+  statusBox: {
+    backgroundColor: '#0a1628cc',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 20,
+    position: 'absolute',
+    top: -40,
+    width: 130,
     alignItems: 'center',
-    marginLeft: 'auto',
   },
-  micBtnActive: {
-    backgroundColor: Colors.bgInput,
-    borderWidth: 1,
-    borderColor: Colors.border,
+  tabStatusBox: {
+    top: -45,
   },
-  input: {
-    flex: 1,
-    paddingHorizontal: 16,
-    fontSize: 15,
-    color: Colors.textPrimary,
-    fontWeight: '600',
-  },
-  processing: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-  },
-  processingText: {
-    marginLeft: 8,
-    fontSize: 13,
-    color: Colors.textSecondary,
+  statusText: {
+    color: '#fff',
+    fontSize: 11,
     fontWeight: '700',
   }
 });

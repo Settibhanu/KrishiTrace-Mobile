@@ -13,6 +13,9 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState('');
   const [asking, setAsking] = useState(false);
+  const [isMuted, setIsMuted] = useState(false);
+  const { i18n } = useTranslation();
+  const lang = (i18n.language || 'en').split('-')[0];
   const flatListRef = useRef(null);
 
   useEffect(() => {
@@ -36,7 +39,13 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
         question: q,
         cropContext: initialCropContext?.toLowerCase(),
       });
-      setMessages(m => [...m, { role: 'bot', text: data.answer }]);
+      const botResponse = data.answer;
+      setMessages(m => [...m, { role: 'bot', text: botResponse }]);
+      
+      // Speak the answer if not muted
+      if (!isMuted) {
+        ttsService.speak(botResponse, lang);
+      }
     } catch (err) {
       setMessages(m => [...m, { role: 'bot', text: 'Sorry, could not fetch answer right now. Please try again.' }]);
     } finally {
@@ -56,10 +65,24 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
             <View style={styles.headerIcon}>
               <Text style={{ fontSize: 20 }}>🤖</Text>
             </View>
-            <View>
+            <View style={{ marginRight: 10 }}>
               <Text style={styles.title}>Market Advisor</Text>
               <Text style={styles.subtitle}>AI Pricing Assistant</Text>
             </View>
+            <TouchableOpacity 
+              onPress={() => {
+                const newMute = !isMuted;
+                setIsMuted(newMute);
+                if (newMute) ttsService.stop();
+              }} 
+              style={styles.muteBtn}
+            >
+              <MaterialCommunityIcons 
+                name={isMuted ? "volume-off" : "volume-high"} 
+                size={22} 
+                color={isMuted ? Colors.textMuted : Colors.primary} 
+              />
+            </TouchableOpacity>
             <TouchableOpacity onPress={onClose} style={styles.closeBtn}>
               <Text style={{ fontSize: 24, color: Colors.textSecondary }}>×</Text>
             </TouchableOpacity>
@@ -120,12 +143,6 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
               onSubmitEditing={() => sendMessage()}
             />
             <TouchableOpacity 
-              style={styles.voiceBtn} 
-              onPress={() => {/* This acts as a trigger for Wispr Flow to type into the focused input */}}
-            >
-              <MaterialCommunityIcons name="microphone" size={24} color={Colors.primary} />
-            </TouchableOpacity>
-            <TouchableOpacity 
               style={[styles.sendBtn, !input.trim() && { opacity: 0.5 }]} 
               onPress={() => sendMessage()} 
               disabled={asking || !input.trim()}
@@ -151,7 +168,8 @@ const styles = StyleSheet.create({
   headerIcon: { width: 44, height: 44, borderRadius: 22, backgroundColor: Colors.primary + '22', justifyContent: 'center', alignItems: 'center', marginRight: 12 },
   title:    { fontSize: 18, fontWeight: '700', color: Colors.textPrimary },
   subtitle: { fontSize: 13, color: Colors.textSecondary },
-  closeBtn: { marginLeft: 'auto', padding: 8 },
+  muteBtn: { marginLeft: 'auto', padding: 8, marginRight: 4 },
+  closeBtn: { padding: 8 },
 
   chatContainer: { padding: 16, paddingBottom: 24 },
   msgRow: { flexDirection: 'row', marginBottom: 16, alignItems: 'flex-end', maxWidth: '85%' },

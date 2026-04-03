@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import { useRouter } from 'expo-router';
 import nluService from '../services/nluService';
 import ttsService from '../services/ttsService';
@@ -25,20 +25,19 @@ export function useVoiceAssistant() {
 
     switch (result.intent) {
       case 'NAVIGATE':
-        ttsService.speak(`Navigating to ${result.data.path.split('/').pop()}`, lang);
+        ttsService.speak(t('assistant.navigating', { screen: result.data.path.split('/').pop() }), lang);
         router.push(result.data.path);
         break;
 
       case 'MARKET_QUERY':
-        ttsService.speak(`Checking market prices for you.`, lang);
+        ttsService.speak(t('assistant.checking_market'), lang);
         router.push('/(tabs)/market');
-        // Logic to pass query to chatbot could go here
         break;
 
       case 'HARVEST_ENTRY':
         const parsed = harvestVoiceParser.parse(text, lang);
         if (parsed.cropType) {
-          ttsService.speak(`Found ${parsed.cropType} harvest. Opening form.`, lang);
+          ttsService.speak(t('assistant.found_harvest', { crop: parsed.cropType }), lang);
           router.push({
             pathname: '/(tabs)/harvest',
             params: { ...parsed, voiceTrigger: 'true' }
@@ -49,8 +48,7 @@ export function useVoiceAssistant() {
         break;
 
       default:
-        // If unknown, maybe pass to chatbot by default
-        router.push('/(tabs)/market');
+        // Optional: Could fall back to chatbot/search
         break;
     }
 
@@ -58,6 +56,16 @@ export function useVoiceAssistant() {
     setIsActive(false);
     setIsProcessing(false);
   }, [lang, router]);
+
+  // Auto-submit after 1.5s of silence
+  useEffect(() => {
+    if (isActive && transcript.trim().length > 0) {
+      const timer = setTimeout(() => {
+        processCommand(transcript);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [transcript, isActive, processCommand]);
 
   return {
     isActive,

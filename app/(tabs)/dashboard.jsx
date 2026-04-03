@@ -69,9 +69,9 @@ export default function DashboardScreen() {
   const lang = (i18n.language || 'en').split('-')[0];
   const localText = {
     en: {
-      helper: "Simple actions for today's farm work",
+      helper: "Sow Smarter. Trace Better.",
       statusHealthy: 'Farm Status: Healthy',
-      locationNotSet: 'Location not set',
+      locationNotSet: 'Bangalore',
       dateNotSet: 'Date not set',
       todayGlance: 'Today At A Glance',
       latestHarvest: 'Latest Harvest',
@@ -95,9 +95,9 @@ export default function DashboardScreen() {
       profileSub: 'Open your account',
     },
     hi: {
-      helper: 'आज के खेत काम के लिए सरल विकल्प',
+      helper: 'स्मार्ट खेती। सुरक्षित बहीखाता।',
       statusHealthy: 'खेत की स्थिति: स्वस्थ',
-      locationNotSet: 'स्थान सेट नहीं है',
+      locationNotSet: 'बेंगलुरु, कर्नाटक',
       dateNotSet: 'तारीख सेट नहीं है',
       todayGlance: 'आज की झलक',
       latestHarvest: 'सबसे हाल की फसल',
@@ -121,9 +121,9 @@ export default function DashboardScreen() {
       profileSub: 'अपना खाता खोलें',
     },
     te: {
-      helper: 'ఈరోజు పొలం పనులకు సులభమైన ఎంపికలు',
+      helper: 'తెలివైన వ్యవసాయం. సురక్షితమైన ట్రేస్.',
       statusHealthy: 'పొలం స్థితి: బాగుంది',
-      locationNotSet: 'స్థానం సెట్ చేయలేదు',
+      locationNotSet: 'బెంగళూరు, కర్ణాటక',
       dateNotSet: 'తేదీ సెట్ చేయలేదు',
       todayGlance: 'ఈరోజు ముఖ్య సమాచారం',
       latestHarvest: 'తాజా పంట',
@@ -147,9 +147,9 @@ export default function DashboardScreen() {
       profileSub: 'మీ ఖాతా తెరవండి',
     },
     kn: {
-      helper: 'ಇಂದಿನ ಹೊಲದ ಕೆಲಸಕ್ಕೆ ಸರಳ ಆಯ್ಕೆಗಳು',
+      helper: 'ಜಾಣತನದ ಕೃಷಿ. ಸುರಕ್ಷಿತ ದಾಖಲೆ.',
       statusHealthy: 'ಹೊಲದ ಸ್ಥಿತಿ: ಉತ್ತಮ',
-      locationNotSet: 'ಸ್ಥಳ ಸೆಟ್ ಆಗಿಲ್ಲ',
+      locationNotSet: 'ಬೆಂಗಳೂರು, ಕರ್ನಾಟಕ',
       dateNotSet: 'ದಿನಾಂಕ ಸೆಟ್ ಆಗಿಲ್ಲ',
       todayGlance: 'ಇಂದಿನ ನೋಟ',
       latestHarvest: 'ಇತ್ತೀಚಿನ ಫಸಲು',
@@ -173,9 +173,9 @@ export default function DashboardScreen() {
       profileSub: 'ನಿಮ್ಮ ಖಾತೆ ತೆರೆಯಿರಿ',
     },
     ta: {
-      helper: 'இன்றைய பண்ணை வேலையிற்கான எளிய தேர்வுகள்',
+      helper: 'அறிவார்ந்த விவசாயம். பாதுகாப்பான தடம்.',
       statusHealthy: 'பண்ணை நிலை: நன்றாக உள்ளது',
-      locationNotSet: 'இடம் அமைக்கப்படவில்லை',
+      locationNotSet: 'பெங்களூரு, கர்நாடகா',
       dateNotSet: 'தேதி அமைக்கப்படவில்லை',
       todayGlance: 'இன்றைய பார்வை',
       latestHarvest: 'சமீப அறுவடை',
@@ -199,9 +199,9 @@ export default function DashboardScreen() {
       profileSub: 'உங்கள் கணக்கைத் திற',
     },
   }[lang] || {
-    helper: "Simple actions for today's farm work",
+    helper: "Sow Smarter. Trace Better.",
     statusHealthy: 'Farm Status: Healthy',
-    locationNotSet: 'Location not set',
+    locationNotSet: 'Bangalore',
     dateNotSet: 'Date not set',
     todayGlance: 'Today At A Glance',
     latestHarvest: 'Latest Harvest',

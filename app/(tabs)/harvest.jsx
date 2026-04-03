@@ -641,10 +641,10 @@ const styles = StyleSheet.create({
   },
   title:      { fontSize: 20, fontWeight: '800', color: Colors.textPrimary },
   headerBtns: { flexDirection: 'row', gap: 8 },
-  voiceBtn:   { backgroundColor: Colors.blue, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 10 },
-  voiceBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
-  addBtn:     { backgroundColor: Colors.primary, paddingHorizontal: 14, paddingVertical: 8, borderRadius: 10 },
-  addBtnText: { color: '#fff', fontWeight: '700' },
+  voiceBtn:   { backgroundColor: Colors.blue, paddingHorizontal: 10, paddingVertical: 6, borderRadius: 8 },
+  voiceBtnText: { color: '#fff', fontWeight: '700', fontSize: 12 },
+  addBtn:     { backgroundColor: Colors.primary, paddingHorizontal: 12, paddingVertical: 6, borderRadius: 8 },
+  addBtnText: { color: '#fff', fontWeight: '700', fontSize: 13 },
 
   card: {
     backgroundColor: Colors.bgCard, borderRadius: 16, padding: 16,

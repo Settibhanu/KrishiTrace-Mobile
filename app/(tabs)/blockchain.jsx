@@ -347,6 +347,48 @@ export default function BlockchainExplorer() {
     );
   };
 
+  // ── List View Block Renderer ──
+  const renderListBlock = ({ item }) => {
+    const isGenesis = item.data?.type === 'GENESIS';
+    const isTampered = item.data?._tampered === true;
+    const isBrokenLink = validation.brokenAt === item.index;
+    const blockColor = isTampered || isBrokenLink ? Colors.error : isGenesis ? Colors.primary : Colors.blue;
+
+    return (
+      <TouchableOpacity
+        activeOpacity={0.7}
+        onPress={() => openBlockDetail(item)}
+        style={styles.listItem}
+      >
+        <View style={[styles.blockCard, {
+          borderColor: isTampered || isBrokenLink ? Colors.error : Colors.border,
+          borderWidth: isTampered || isBrokenLink ? 2 : 1,
+          marginLeft: 0,
+        }]}>
+          <View style={styles.blockHeader}>
+            <Text style={styles.blockIndex}>Block #{item.index}</Text>
+            <View style={styles.listHeaderRight}>
+              <Text style={styles.listTime}>{new Date(item.timestamp).toLocaleTimeString()}</Text>
+              <View style={[styles.statusDot, { backgroundColor: blockColor }]} />
+            </View>
+          </View>
+
+          <Text style={[styles.blockType, { color: blockColor }]}>
+            {isGenesis ? '🌱 Genesis' :
+              item.data?.type === 'HARVEST_CREATED' ? `🌾 ${item.data.cropType || 'Harvest'}` :
+                isTampered ? '⚠️ Tampered' : item.data?.type || 'Data'}
+          </Text>
+
+          <View style={styles.listHashRow}>
+            <Text style={styles.hashValue}>{shortHash(item.hash)}</Text>
+            <Text style={styles.hashIndicator}>←</Text>
+            <Text style={styles.hashValue}>{shortHash(item.previousHash)}</Text>
+          </View>
+        </View>
+      </TouchableOpacity>
+    );
+  };
+
   return (
     <View style={styles.container}>
       {/* Header */}
@@ -420,9 +462,10 @@ export default function BlockchainExplorer() {
 
       {/* Block List */}
       <FlatList
+        key={viewMode}
         data={[...chain].reverse()}
         keyExtractor={(item) => String(item.index)}
-        renderItem={renderTimelineBlock}
+        renderItem={viewMode === 'timeline' ? renderTimelineBlock : renderListBlock}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={{ fontSize: 48 }}>🔗</Text>
@@ -526,6 +569,20 @@ const styles = StyleSheet.create({
   empty: { alignItems: 'center', paddingTop: 80 },
   emptyText: { color: Colors.textPrimary, fontSize: 18, fontWeight: '600', marginTop: 12 },
   emptySubText: { color: Colors.textSecondary, fontSize: 14, marginTop: 6, textAlign: 'center' },
+
+  // List View Specific
+  listItem: { marginBottom: 10 },
+  listHeaderRight: { flexDirection: 'row', alignItems: 'center' },
+  listTime: { color: Colors.textMuted, fontSize: 11, marginRight: 8 },
+  listHashRow: { 
+    flexDirection: 'row', 
+    alignItems: 'center', 
+    backgroundColor: Colors.bgInput, 
+    padding: 6, 
+    borderRadius: 8,
+    marginTop: 4
+  },
+  hashIndicator: { color: Colors.textMuted, marginHorizontal: 8, fontSize: 10 },
 });
 
 // ── Mining Animation Styles ──

@@ -26,7 +26,7 @@ const resources = {
         title: 'My Harvests',
         advisor: 'Advisor',
         ai_assist: 'AI Assist',
-        add: 'Add Batch',
+        add: 'Add',
         empty: 'No harvests yet.',
         crop: 'Crop Type',
         quantity: 'Quantity',
@@ -42,7 +42,10 @@ const resources = {
         listening: 'Listening...',
         processing: 'Parsing command...',
         success: 'Command executed',
-        error: 'Sorry, I didn\'t understand that.'
+        error: 'Sorry, I didn\'t understand that.',
+        navigating: 'Navigating to {{screen}}.',
+        checking_market: 'Checking market prices for you.',
+        found_harvest: 'Found {{crop}} harvest. Opening form.'
       }
     }
   },
@@ -69,7 +72,10 @@ const resources = {
         listening: 'सुन रहा हूँ...',
         processing: 'कमांड पार्स हो रहा है...',
         success: 'कमांड निष्पादित',
-        error: 'क्षमा करें, मुझे समझ नहीं आया।'
+        error: 'क्षमा करें, मुझे समझ नहीं आया।',
+        navigating: '{{screen}} पर जा रहे हैं।',
+        checking_market: 'आपके लिए बाजार भाव देख रहे हैं।',
+        found_harvest: '{{crop}} की फसल मिली। फॉर्म खोल रहे हैं।'
       }
     }
   },
@@ -96,7 +102,10 @@ const resources = {
         listening: 'వింటున్నాను...',
         processing: 'కమాండ్‌ను విశ్లేషిస్తోంది...',
         success: 'కమాండ్ అమలు చేయబడింది',
-        error: 'క్షమించండి, నాకు అర్థం కాలేదు.'
+        error: 'క్షమించండి, నాకు అర్థం కాలేదు.',
+        navigating: '{{screen}}కు వెళ్తున్నాము.',
+        checking_market: 'మీ కోసం మార్కెట్ ధరలను తనిఖీ చేస్తున్నాము.',
+        found_harvest: '{{crop}} పంట దొరికింది. ఫారమ్‌ను తెరుస్తున్నాము.'
       }
     }
   },
@@ -117,7 +126,10 @@ const resources = {
         listening: 'ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತಿದ್ದೇನೆ...',
         processing: 'ಆಜ್ಞೆಯನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ...',
         success: 'ಆಜ್ಞೆಯನ್ನು ಕಾರ್ಯಗತಗೊಳಿಸಲಾಗಿದೆ',
-        error: 'ಕ್ಷಮಿಸಿ, ನನಗೆ ಅರ್ಥವಾಗಲಿಲ್ಲ.'
+        error: 'ಕ್ಷಮಿಸಿ, ನನಗೆ ಅರ್ಥವಾಗಲಿಲ್ಲ.',
+        navigating: '{{screen}}ಗೆ ಹೋಗುತ್ತಿದ್ದೇವೆ.',
+        checking_market: 'ನಿಮಗಾಗಿ ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳನ್ನು ಪರಿಶೀಲಿಸಲಾಗುತ್ತಿದೆ.',
+        found_harvest: '{{crop}} ಫಸಲು ಕಂಡುಬಂದಿದೆ. ಫಾರ್ಮ್ ತೆರೆಯಲಾಗುತ್ತಿದೆ.'
       }
     }
   },
@@ -132,6 +144,16 @@ const resources = {
         title: 'என் அறுவடைகள்', advisor: 'ஆலோசகர்', ai_assist: 'AI உதவி', add: 'சேர்', empty: 'எந்த அறுவடையும் இல்லை.',
         crop: 'பயிர் வகை', quantity: 'அளவு', unit: 'அலகு', location: 'இடம்',
         payout: 'விவசாயி கட்டணம் (₹/kg)', consumer_price: 'நுகர்வோர் விலை (₹/kg)', transport: 'போக்குவரத்து செலவு (₹/kg)', submit: 'சேமிக்க'
+      },
+      assistant: {
+        placeholder: 'Wispr Flow மூலம் பேசவும்...',
+        listening: 'கேட்கிறேன்...',
+        processing: 'கட்டளையை ஆய்வு செய்கிறேன்...',
+        success: 'கட்டளை நிறைவேற்றப்பட்டது',
+        error: 'மன்னிக்கவும், எனக்கு புரியவில்லை.',
+        navigating: '{{screen}}க்கு செல்கிறோம்.',
+        checking_market: 'உங்களுக்காக சந்தை விலைகளை சரிபார்க்கிறோம்.',
+        found_harvest: '{{crop}} அறுவடை கிடைத்தது. படிவத்தைத் திறக்கிறோம்.'
       }
     }
   }
