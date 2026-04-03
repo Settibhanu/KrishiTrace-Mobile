@@ -5,6 +5,9 @@ import {
 } from 'react-native';
 import api from '../services/api';
 import { Colors } from '../constants/Colors';
+import { MaterialCommunityIcons } from '@expo/vector-icons';
+import ttsService from '../services/ttsService';
+import { useTranslation } from 'react-i18next';
 
 export default function MarketChatbot({ visible, onClose, initialCropContext = null }) {
   const [messages, setMessages] = useState([]);
@@ -117,6 +120,12 @@ export default function MarketChatbot({ visible, onClose, initialCropContext = n
               onSubmitEditing={() => sendMessage()}
             />
             <TouchableOpacity 
+              style={styles.voiceBtn} 
+              onPress={() => {/* This acts as a trigger for Wispr Flow to type into the focused input */}}
+            >
+              <MaterialCommunityIcons name="microphone" size={24} color={Colors.primary} />
+            </TouchableOpacity>
+            <TouchableOpacity 
               style={[styles.sendBtn, !input.trim() && { opacity: 0.5 }]} 
               onPress={() => sendMessage()} 
               disabled={asking || !input.trim()}
@@ -162,4 +171,5 @@ const styles = StyleSheet.create({
   inputArea: { flexDirection: 'row', padding: 16, borderTopWidth: 1, borderTopColor: Colors.border, backgroundColor: Colors.bg, paddingBottom: Platform.OS === 'ios' ? 32 : 16 },
   input:     { flex: 1, backgroundColor: Colors.bgInput, borderWidth: 1, borderColor: Colors.border, borderRadius: 24, paddingHorizontal: 16, fontSize: 15, color: Colors.textPrimary, maxHeight: 100, minHeight: 48 },
   sendBtn:   { width: 48, height: 48, borderRadius: 24, backgroundColor: Colors.primary, justifyContent: 'center', alignItems: 'center', marginLeft: 12 },
+  voiceBtn:  { width: 44, height: 44, justifyContent: 'center', alignItems: 'center', marginLeft: 8 },
 });

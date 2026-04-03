@@ -36,6 +36,13 @@ const resources = {
         consumer_price: 'Consumer Price (₹/kg)',
         transport: 'Transport Cost (₹/kg)',
         submit: 'Save to Ledger'
+      },
+      assistant: {
+        placeholder: 'Speak via Wispr Flow...',
+        listening: 'Listening...',
+        processing: 'Parsing command...',
+        success: 'Command executed',
+        error: 'Sorry, I didn\'t understand that.'
       }
     }
   },
@@ -56,6 +63,13 @@ const resources = {
         title: 'मेरी फसलें', advisor: 'सलाहकार', ai_assist: 'AI सहायता', add: 'जोड़ें', empty: 'अभी कोई फसल नहीं।',
         crop: 'फसल का प्रकार', quantity: 'मात्रा', unit: 'इकाई', location: 'स्थान / गाँव',
         payout: 'किसान भुगतान (₹/kg)', consumer_price: 'उपभोक्ता मूल्य (₹/kg)', transport: 'परिवहन लागत (₹/kg)', submit: 'बहीखाते में सहेजें'
+      },
+      assistant: {
+        placeholder: 'Wispr Flow के माध्यम से बोलें...',
+        listening: 'सुन रहा हूँ...',
+        processing: 'कमांड पार्स हो रहा है...',
+        success: 'कमांड निष्पादित',
+        error: 'क्षमा करें, मुझे समझ नहीं आया।'
       }
     }
   },
@@ -76,6 +90,13 @@ const resources = {
         title: 'నా పంటలు', advisor: 'సలహాదారు', ai_assist: 'AI సహాయం', add: 'జోడించు', empty: 'ఇంకా పంటలు లేవు.',
         crop: 'పంట రకం', quantity: 'పరిమాణం', unit: 'యూనిట్', location: 'స్థానం',
         payout: 'రైతు చెల్లింపు (₹/kg)', consumer_price: 'వినియోగదారు ధర (₹/kg)', transport: 'రవాణా ఖర్చు (₹/kg)', submit: 'లెడ్జర్‌కు సేవ్ చేయండి'
+      },
+      assistant: {
+        placeholder: 'Wispr Flow ద్వారా మాట్లాడండి...',
+        listening: 'వింటున్నాను...',
+        processing: 'కమాండ్‌ను విశ్లేషిస్తోంది...',
+        success: 'కమాండ్ అమలు చేయబడింది',
+        error: 'క్షమించండి, నాకు అర్థం కాలేదు.'
       }
     }
   },
@@ -90,6 +111,13 @@ const resources = {
         title: 'ನನ್ನ ಫಸಲುಗಳು', advisor: 'ಸಲಹೆಗಾರ', ai_assist: 'AI ಸಹಾಯ', add: 'ಸೇರಿಸಿ', empty: 'ಯಾವುದೇ ಫಸಲುಗಳಿಲ್ಲ.',
         crop: 'ಬೆಳೆಯ ಪ್ರಕಾರ', quantity: 'ಪ್ರಮಾಣ', unit: 'ಘಟಕ', location: 'ಸ್ಥಳ / ಗ್ರಾಮ',
         payout: 'ರೈತರ ಪಾವತಿ (₹/kg)', consumer_price: 'ಗ್ರಾಹಕರ ಬೆಲೆ (₹/kg)', transport: 'ಸಾರಿಗೆ ವೆಚ್ಚ (₹/kg)', submit: 'ಉಳಿಸು'
+      },
+      assistant: {
+        placeholder: 'Wispr Flow ಮೂಲಕ ಮಾತನಾಡಿ...',
+        listening: 'ಕೇಳಿಸಿಕೊಳ್ಳುತ್ತಿದ್ದೇನೆ...',
+        processing: 'ಆಜ್ಞೆಯನ್ನು ವಿಶ್ಲೇಷಿಸಲಾಗುತ್ತಿದೆ...',
+        success: 'ಆಜ್ಞೆಯನ್ನು ಕಾರ್ಯಗತಗೊಳಿಸಲಾಗಿದೆ',
+        error: 'ಕ್ಷಮಿಸಿ, ನನಗೆ ಅರ್ಥವಾಗಲಿಲ್ಲ.'
       }
     }
   },

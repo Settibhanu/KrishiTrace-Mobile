@@ -4,6 +4,7 @@ import {
   Modal, TextInput, Alert, ActivityIndicator, RefreshControl,
   Animated, ScrollView, Easing,
 } from 'react-native';
+import { useLocalSearchParams } from 'expo-router';
 import { getHarvests, addHarvest } from '../../services/api';
 import api from '../../services/api';
 import { Colors } from '../../constants/Colors';
@@ -239,6 +240,21 @@ export default function HarvestScreen() {
     cropType: '', location: '', quantity: '', unit: 'kg',
     farmerPayout: '', finalConsumerPrice: '', transportCost: '', notes: '',
   });
+
+  const params = useLocalSearchParams();
+
+  useEffect(() => {
+    if (params.voiceTrigger === 'true') {
+      setForm(f => ({
+        ...f,
+        cropType: params.cropType || f.cropType,
+        quantity: params.quantity || f.quantity,
+        unit: params.unit || f.unit,
+        farmerPayout: params.farmerPayout || f.farmerPayout,
+      }));
+      setModal(true);
+    }
+  }, [params]);
 
   useEffect(() => { load(); }, []);
 

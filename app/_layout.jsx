@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Slot, useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { StatusBar } from 'expo-status-bar';
+import VoiceAssistantButton from '../components/VoiceAssistantButton';
 
 export default function RootLayout() {
   const router = useRouter();
@@ -27,6 +28,7 @@ export default function RootLayout() {
     <>
       <StatusBar style="light" backgroundColor="#0a1628" />
       <Slot />
+      <VoiceAssistantButton />
     </>
   );
 }
