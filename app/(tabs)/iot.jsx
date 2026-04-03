@@ -44,6 +44,19 @@ const ReadingCard = ({ item }) => {
           </Text>
           <Text style={styles.sensorLabel}>Humidity</Text>
         </View>
+
+        <View style={styles.sensorDivider} />
+
+        {/* Intrusion */}
+        <View style={styles.sensorBox}>
+          <Text style={styles.sensorIcon}>🐗</Text>
+          <Text style={[styles.sensorValue, {
+            color: item.animalDetected ? Colors.error : Colors.success,
+          }]}>
+            {item.animalDetected ? 'ALERT' : 'SAFE'}
+          </Text>
+          <Text style={styles.sensorLabel}>Perimeter</Text>
+        </View>
       </View>
 
       <Text style={styles.timestamp}>
@@ -168,12 +181,12 @@ const styles = StyleSheet.create({
   },
   alertBanner:  { borderRadius: 8, padding: 10, marginBottom: 12 },
   alertText:    { fontWeight: '700', fontSize: 13 },
-  readingRow:   { flexDirection: 'row', justifyContent: 'space-around', marginBottom: 10 },
+  readingRow:   { flexDirection: 'row', justifyContent: 'space-between', marginBottom: 10 },
   sensorBox:    { alignItems: 'center', flex: 1 },
   sensorIcon:   { fontSize: 28, marginBottom: 4 },
-  sensorValue:  { fontSize: 24, fontWeight: '800', color: Colors.textPrimary },
-  sensorLabel:  { color: Colors.textSecondary, fontSize: 12, marginTop: 2 },
-  sensorDivider:{ width: 1, backgroundColor: Colors.border },
+  sensorValue:  { fontSize: 20, fontWeight: '800', color: Colors.textPrimary, textAlign: 'center' },
+  sensorLabel:  { color: Colors.textSecondary, fontSize: 11, marginTop: 2 },
+  sensorDivider:{ width: 1, backgroundColor: Colors.border, marginHorizontal: 4 },
   timestamp:    { color: Colors.textMuted, fontSize: 11, textAlign: 'center' },
 
   empty:       { alignItems: 'center', paddingTop: 80 },
