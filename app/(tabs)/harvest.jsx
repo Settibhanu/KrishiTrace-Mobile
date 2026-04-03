@@ -40,6 +40,34 @@ const statusColor = (s) => {
   return Colors.blue;
 };
 
+const MarketInsights = ({ crop, prices, loading }) => {
+  if (!crop) return null;
+  return (
+    <View style={styles.insightsContainer}>
+      <Text style={styles.insightsTitle}>🤝 Market Insights</Text>
+      <Text style={styles.insightsSubtitle}>Recent local sales of {crop} by Friend Farmers</Text>
+      {loading ? (
+        <ActivityIndicator size="small" color={Colors.primary} style={{ marginTop: 12, marginBottom: 8 }} />
+      ) : prices.length > 0 ? (
+        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightsScroll}>
+          {prices.map((p, i) => (
+            <View key={i} style={styles.insightCard}>
+              <View style={styles.insightHeader}>
+                <Text style={styles.insightEmoji}>{p.emoji}</Text>
+                <Text style={styles.insightName}>{p.name}</Text>
+              </View>
+              <Text style={styles.insightPrice}>₹{p.price}<Text style={{ fontSize: 11, color: Colors.textSecondary }}>/{p.unit}</Text></Text>
+              <Text style={styles.insightTime}>{p.time}</Text>
+            </View>
+          ))}
+        </ScrollView>
+      ) : (
+        <Text style={[styles.insightsSubtitle, { marginTop: 12 }]}>No recent community sales found.</Text>
+      )}
+    </View>
+  );
+};
+
 const HarvestCard = ({ item }) => (
   <View style={styles.card}>
     <View style={styles.cardHeader}>
@@ -72,6 +100,7 @@ export default function HarvestScreen() {
   // Market Advisor / Chatbot states
   const [chatModal, setChatModal]   = useState(false);
   const [pricesLoading, setPricesLoading] = useState(false);
+  const [friendPrices, setFriendPrices]   = useState([]);
 
   // Voice AI states
   const [voiceModal, setVoiceModal] = useState(false);
@@ -104,8 +133,22 @@ export default function HarvestScreen() {
   const fetchMarketAnalysis = async (c) => {
     setForm(f => ({ ...f, cropType: c }));
     setPricesLoading(true);
+    setFriendPrices([]);
     try {
       const { data } = await api.get(`/market/analysis?crop=${c}&quantity=0&unit=kg`);
+      
+      if (data && data.currentPrice) {
+        const base = data.currentPrice;
+        const mockFriends = [
+          { name: 'Ramesh Reddy', emoji: '🧑🏽‍🌾', price: Math.round(base * 0.98), unit: 'kg', time: '1 hr ago' },
+          { name: 'Srinivas Rao', emoji: '👨🏽‍🌾', price: Math.round(base * 1.05), unit: 'kg', time: '3 hrs ago' },
+          { name: 'Kavitha M.',   emoji: '👩🏽‍🌾', price: Math.round(base * 1.02), unit: 'kg', time: '5 hrs ago' },
+          { name: 'Abdul Khan',   emoji: '🧔🏽‍♂️', price: Math.round(base * 0.95), unit: 'kg', time: 'Yesterday' },
+          { name: 'Farmer John',  emoji: '👨🏼‍🌾', price: Math.round(base * 1.01), unit: 'kg', time: '2 hrs ago' }
+        ];
+        // Shuffle and pick 3 Random
+        setFriendPrices(mockFriends.sort(() => 0.5 - Math.random()).slice(0, 3));
+      }
       if (data && data.found) {
         setForm(f => ({
           ...f,
@@ -359,6 +402,8 @@ export default function HarvestScreen() {
                 </View>
               </ScrollView>
 
+              <MarketInsights crop={form.cropType} prices={friendPrices} loading={pricesLoading} />
+
               <Text style={styles.label}>{t('harvest.location')}</Text>
               <TextInput style={styles.input} placeholder="e.g. Kurnool, AP" placeholderTextColor={Colors.textMuted}
                 value={form.location} onChangeText={set('location')} />
@@ -553,4 +598,35 @@ const styles = StyleSheet.create({
     width: '100%', borderWidth: 1, borderColor: Colors.border,
   },
   miningHashText: { color: Colors.primary, fontSize: 10, fontFamily: 'monospace', textAlign: 'center' },
+
+  // Market Insights
+  insightsContainer: {
+    marginTop: 16,
+    marginBottom: 8,
+    backgroundColor: Colors.primary + '10',
+    borderRadius: 16,
+    paddingVertical: 14,
+    borderWidth: 1,
+    borderColor: Colors.primary + '30',
+  },
+  insightsTitle: { color: Colors.primary, fontSize: 14, fontWeight: '800', marginHorizontal: 16 },
+  insightsSubtitle: { color: Colors.textSecondary, fontSize: 12, marginHorizontal: 16, marginTop: 2 },
+  insightsScroll: { paddingHorizontal: 16, paddingTop: 12, gap: 10 },
+  insightCard: {
+    backgroundColor: Colors.bgCard,
+    borderRadius: 12,
+    padding: 12,
+    minWidth: 140,
+    borderWidth: 1,
+    borderColor: Colors.border,
+    shadowColor: '#000',
+    shadowOpacity: 0.05,
+    shadowRadius: 4,
+    elevation: 2,
+  },
+  insightHeader: { flexDirection: 'row', alignItems: 'center', marginBottom: 8 },
+  insightEmoji: { fontSize: 18, marginRight: 6 },
+  insightName: { color: Colors.textPrimary, fontSize: 12, fontWeight: '600' },
+  insightPrice: { color: Colors.textPrimary, fontSize: 16, fontWeight: '800' },
+  insightTime: { color: Colors.textMuted, fontSize: 10, marginTop: 4 },
 });
