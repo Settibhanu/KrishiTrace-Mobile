@@ -8,6 +8,78 @@ import { getQRData } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import blockchain from '../../services/blockchain';
 
+const DEMO_BATCHES = {
+  'HV-1': {
+    crop: 'Tomato', quantity: 500, unit: 'kg', status: 'Verified',
+    location: 'Kurnool, AP', harvestDate: '2024-03-15',
+    farmerPayout: 30, finalConsumerPrice: 55,
+    farmerName: 'Ramesh Reddy',
+    farmerStory: '3rd generation farmer growing tomatoes using organic compost. Awarded Best Farmer in district 2023.',
+    farmSize: '2 acres',
+    farmingMethod: 'Organic',
+  },
+  'HV-2': {
+    crop: 'Potato', quantity: 1000, unit: 'kg', status: 'In Transit',
+    location: 'Mahbubnagar, TS', harvestDate: '2024-03-10',
+    farmerPayout: 20, finalConsumerPrice: 35,
+    farmerName: 'Venkatesh Rao',
+    farmerStory: 'Traditional potato farmer using drip irrigation for 15 years. Supplies to local supermarkets.',
+    farmSize: '5 acres',
+    farmingMethod: 'Modern irrigation',
+  },
+  'HV-3': {
+    crop: 'Onion', quantity: 750, unit: 'kg', status: 'Verified',
+    location: 'Guntur, AP', harvestDate: '2024-03-18',
+    farmerPayout: 25, finalConsumerPrice: 42,
+    farmerName: 'Lakshmi Devi',
+    farmerStory: 'Women farmer group leader. Using natural pesticides, reduced costs by 40%.',
+    farmSize: '1.5 acres',
+    farmingMethod: 'Natural pesticides',
+  },
+  'HV-4': {
+    crop: 'Mango', quantity: 200, unit: 'kg', status: 'Verified',
+    location: 'Kanyakumari, TN', harvestDate: '2024-04-01',
+    farmerPayout: 80, finalConsumerPrice: 150,
+    farmerName: 'Muthuswamy',
+    farmerStory: 'Heritage mango orchard with 50-year-old trees. Export quality Alphonso variety.',
+    farmSize: '10 acres',
+    farmingMethod: 'Traditional',
+  },
+  'HV-5': {
+    crop: 'Rice', quantity: 50, unit: 'quintal', status: 'Verified',
+    location: 'Raichur, KA', harvestDate: '2024-02-28',
+    farmerPayout: 2000, finalConsumerPrice: 3500,
+    farmerName: 'Sharanappa Hiremath',
+    farmerStory: 'Paddy specialist using System of Rice Intensification. 30% higher yield with less water.',
+    farmSize: '8 acres',
+    farmingMethod: 'SRI Method',
+  },
+};
+
+const getDemoBatch = (id) => {
+  if (DEMO_BATCHES[id]) return DEMO_BATCHES[id];
+  if (id.match(/^HV-\d+$/)) {
+    const crops = ['Tomato', 'Potato', 'Onion', 'Rice', 'Wheat', 'Maize', 'Mango', 'Banana'];
+    const locations = ['Kurnool, AP', 'Hyderabad, TS', 'Guntur, AP', 'Raichur, KA', 'Madurai, TN'];
+    const farmers = ['Ramesh Reddy', 'Venkatesh Rao', 'Lakshmi Devi', 'Muthuswamy', 'Sharanappa'];
+    return {
+      crop: crops[Math.floor(Math.random() * crops.length)],
+      quantity: Math.floor(Math.random() * 500) + 100,
+      unit: 'kg',
+      status: 'Verified',
+      location: locations[Math.floor(Math.random() * locations.length)],
+      harvestDate: new Date(Date.now() - Math.random() * 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
+      farmerPayout: Math.floor(Math.random() * 50) + 20,
+      finalConsumerPrice: Math.floor(Math.random() * 80) + 40,
+      farmerName: farmers[Math.floor(Math.random() * farmers.length)],
+      farmerStory: 'Experienced local farmer with generations of farming knowledge.',
+      farmSize: Math.floor(Math.random() * 5 + 1) + ' acres',
+      farmingMethod: 'Traditional',
+    };
+  }
+  return null;
+};
+
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
   const [scanning, setScanning] = useState(false);
@@ -26,8 +98,21 @@ export default function ScanScreen() {
     setLoading(true);
     setScanning(false);
 
+    const id = data.includes('/') ? data.split('/').pop() : data;
+
+    const demoBatch = getDemoBatch(id);
+    if (demoBatch) {
+      const now = new Date().toISOString();
+      setResult({
+        ...demoBatch,
+        ledger: { hash: id.slice(0, 8) + '...', timestamp: now, verifiedBy: 'KrishiTrace Authority' },
+        iot: { temperature: Math.floor(Math.random() * 15) + 15, humidity: Math.floor(Math.random() * 30) + 50 },
+      });
+      setLoading(false);
+      return;
+    }
+
     try {
-      const id = data.includes('/') ? data.split('/').pop() : data;
       const res = await getQRData(id);
       setResult(res.data?.data || res.data);
     } catch (err) {
@@ -100,6 +185,20 @@ export default function ScanScreen() {
           <Row label="Location" value={result.location || '—'} />
           <Row label="Harvest Date" value={result.harvestDate ? new Date(result.harvestDate).toDateString() : '—'} />
         </Section>
+
+        {result.farmerName && (
+          <Section title="Farmer Information">
+            <Row label="Farmer" value={result.farmerName || '—'} />
+            <Row label="Farm Size" value={result.farmSize || '—'} />
+            <Row label="Method" value={result.farmingMethod || '—'} />
+            {result.farmerStory && (
+              <View style={[styles.farmerStoryBox, { marginTop: 8 }]}>
+                <Text style={styles.farmerStoryLabel}>📖 Story</Text>
+                <Text style={styles.farmerStoryText}>{result.farmerStory}</Text>
+              </View>
+            )}
+          </Section>
+        )}
 
         {result.ledger && (
           <Section title="Ledger">
@@ -237,10 +336,13 @@ const styles = StyleSheet.create({
   resultSubtitle: { color: Colors.textSecondary, fontSize: 13, marginTop: 4, textAlign: 'center' },
   section: { marginBottom: 20 },
   sectionTitle: { color: Colors.textSecondary, fontSize: 12, fontWeight: '700', letterSpacing: 1, textTransform: 'uppercase', marginBottom: 8 },
-  sectionCard: { backgroundColor: Colors.bgCard, borderRadius: 14, borderWidth: 1, borderColor: Colors.border, overflow: 'hidden' },
+  sectionCard: { backgroundColor: Colors.bgCard, borderRadius: 14, borderWidth: 1, borderColor: Colors.border, overflow: 'hidden', paddingBottom: 8 },
   row: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: Colors.border },
   rowLabel: { color: Colors.textSecondary, fontSize: 13, flex: 1 },
-  rowValue: { color: Colors.textPrimary, fontSize: 13, fontWeight: '600', flex: 2, textAlign: 'right' },
+  rowValue: { color: Colors.textPrimary, fontSize: 13, fontWeight: '600', flex: 2, textAlign: 'right', flexWrap: 'wrap' },
+  farmerStoryBox: { paddingHorizontal: 16, paddingVertical: 10, borderTopWidth: 1, borderTopColor: Colors.border },
+  farmerStoryLabel: { color: Colors.textMuted, fontSize: 10, fontWeight: '700', marginBottom: 4 },
+  farmerStoryText: { color: Colors.textSecondary, fontSize: 11, lineHeight: 16 },
   scanAgainBtn: { backgroundColor: Colors.primary, borderRadius: 14, paddingVertical: 16, alignItems: 'center', marginTop: 12 },
   scanAgainText: { color: '#fff', fontWeight: '700', fontSize: 16 },
   chainBanner: { flexDirection: 'row', alignItems: 'center', padding: 14, borderRadius: 14, borderWidth: 1, marginBottom: 20 },
