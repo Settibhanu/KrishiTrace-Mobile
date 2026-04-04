@@ -43,11 +43,37 @@ cam = {
     "theta" : 0.7,   "phi"   : 0.52,
     "radius": 45.0,  "cx"    : 0.0,
     "cy"    : 2.0,   "cz"    : 0.0,
-    "auto"  : True,
+    "auto"  : True,  "cinematic": False,
+    "target_radius": 45.0
 }
 drag   = {"left": False, "right": False, "lx": 0, "ly": 0}
 tod    = ["day"]
 fog_on = [True]
+
+# ── atmospheric particles ──────────────────────────────────────────────────
+class Particle:
+    def __init__(self, rain=False):
+        self.rain = rain
+        self.reset()
+    def reset(self):
+        self.x, self.y, self.z = random.uniform(-40,40), random.uniform(0,30), random.uniform(-40,40)
+        self.vx = random.uniform(-0.02, 0.02)
+        self.vy = -random.uniform(0.1, 0.4) if self.rain else random.uniform(-0.01, 0.01)
+        self.vz = random.uniform(-0.02, 0.02)
+        self.life = random.uniform(2, 5)
+    def update(self, dt):
+        self.x += self.vx; self.y += self.vy; self.z += self.vz; self.life -= dt
+        if self.y < 0 or self.life < 0: self.reset()
+    def draw(self):
+        col = (0.5, 0.7, 1.0, 0.6) if self.rain else (1.0, 1.0, 0.8, 0.3)
+        glColor4f(*col)
+        if self.rain:
+            glBegin(GL_LINES); glVertex3f(self.x, self.y, self.z); glVertex3f(self.x, self.y+0.4, self.z); glEnd()
+        else:
+            glPointSize(2.0); glBegin(GL_POINTS); glVertex3f(self.x, self.y, self.z); glEnd()
+
+particles = [Particle(False) for _ in range(150)]
+rain_particles = [Particle(True) for _ in range(400)]
 
 # ── sensor / metric state ────────────────────────────────────────────────────
 metrics = {
@@ -66,6 +92,28 @@ ALERTS = [
     "Shipment #KT-2847 dispatched",
     "Soil moisture optimal  Rows 4-7",
 ]
+
+# ── crop configuration ───────────────────────────────────────────────────────
+CROP_DATA = {
+    "Tomato": {
+        "temp": (21, 27), "hum": (60, 85), "ph": (6.0, 6.8), "moist": (60, 80),
+        "icon": "🍅", "color": (255, 50, 50)
+    },
+    "Onion": {
+        "temp": (20, 27), "hum": (50, 70), "ph": (6.0, 7.0), "moist": (40, 60),
+        "icon": "🧅", "color": (200, 160, 255)
+    },
+    "Rice": {
+        "temp": (22, 32), "hum": (70, 90), "ph": (5.5, 6.5), "moist": (85, 100),
+        "icon": "🌾", "color": (255, 230, 100)
+    },
+    "Groundnut": {
+        "temp": (24, 30), "hum": (50, 70), "ph": (5.5, 7.0), "moist": (50, 70),
+        "icon": "🥜", "color": (210, 180, 140)
+    }
+}
+current_crop = ["Tomato"]
+sidebar_width = 180
 alert_state = {"idx": 0, "text": ALERTS[0], "timer": 0.0}
 last_metric = [0.0]
 hovered_sensor = None
@@ -107,6 +155,14 @@ def create_blip_sound(frequency=800, duration_ms=150, volume=0.6):
 # ════════════════════════════════════════════════════════════════════════════
 
 def gl_color(c): glColor4f(*c)
+
+def draw_shadow(x, z, r, alpha=0.3):
+    glDisable(GL_LIGHTING); glColor4f(0, 0, 0, alpha)
+    glBegin(GL_TRIANGLE_FAN); glVertex3f(x, 0.01, z)
+    for i in range(17):
+        a = math.pi * 2 * i / 16
+        glVertex3f(x + math.cos(a)*r, 0.01, z + math.sin(a)*r)
+    glEnd(); glEnable(GL_LIGHTING)
 
 def draw_box(x, y, z, w, h, d, col):
     hw, hh, hd = w/2, h/2, d/2
@@ -186,69 +242,90 @@ def draw_plane_textured(size, col, subdivs=40):
 # ════════════════════════════════════════════════════════════════════════════
 
 CROPS = []
-# Zones: tomato, wheat, cabbage
+# ZONES: tomato, onion, rice, groundnut
 ZONES_DEF = [
-    (range(-18,-7,3), range(-18,-7,3), "tomato", (0.1, 0.4, 0.1, 1)),
-    (range( 8, 19,1), range(-18,-7,1), "wheat",  (0.8, 0.7, 0.2, 1)),
-    (range(-18,-7,2), range( 8, 19,2), "cabbage",(0.4, 0.7, 0.3, 1)),
-    (range( 8, 19,3), range( 8, 19,3), "tomato", (0.1, 0.4, 0.1, 1)),
+    (range(-19, 21, 5), range(-19, 21, 5), "tomato", (0.1, 0.4, 0.1, 1)),
+    (range(-19, 21, 5), range(-19, 21, 5), "onion",  (0.2, 0.5, 0.2, 1)),
+    (range(-19, 21, 5), range(-19, 21, 5), "rice",   (0.3, 0.6, 0.2, 1)),
+    (range(-19, 21, 5), range(-19, 21, 5), "groundnut", (0.2, 0.5, 0.1, 1)),
 ]
 for xr, zr, ctype, cc in ZONES_DEF:
     for xi in xr:
         for zi in zr:
-            h = 1.2 if ctype=="tomato" else 0.8 if ctype=="wheat" else 0.4
+            h = 1.2 if ctype=="tomato" else 0.9 if ctype=="rice" else 0.5
             ro = random.uniform(0, 360)
-            CROPS.append((xi + random.uniform(-0.1,0.1), zi + random.uniform(-0.1,0.1), h, ctype, ro))
+            stage = random.uniform(0.1, 1.0)
+            CROPS.append([xi + random.uniform(-0.1,0.1), zi + random.uniform(-0.1,0.1), h, ctype, ro, stage])
 
-def render_plant(cx2, cz2, ch, ctype, r_offset, sway):
+# ── farmer npc ───────────────────────────────────────────────────────────────
+class Farmer:
+    def __init__(self):
+        self.x, self.z = -10, -10; self.tx, self.tz = 0, 0; self.speed = 2.5
+        self.walk_t = 0; self.action = "idle"; self.action_t = 0
+    def update(self, dt):
+        dx, dz = self.tx - self.x, self.tz - self.z
+        dst = math.hypot(dx, dz)
+        if dst < 0.5:
+            self.action_t -= dt
+            if self.action_t <= 0:
+                self.tx, self.tz = random.uniform(-25,25), random.uniform(-25,25)
+                self.action_t = random.uniform(2, 6)
+        else:
+            mv = self.speed * dt; self.x += (dx/dst)*mv; self.z += (dz/dst)*mv
+            self.walk_t += dt * 10
+    def draw(self):
+        glPushMatrix(); glTranslatef(self.x, 0.8 + math.sin(self.walk_t)*0.05, self.z)
+        angle = math.degrees(math.atan2(-self.tx + self.x, self.tz - self.z))
+        glRotatef(angle, 0, 1, 0)
+        # Body (Overalls)
+        draw_box(0, 0, 0, 0.4, 0.7, 0.25, (0.2, 0.4, 0.8, 1))
+        draw_sphere(0, 0.55, 0, 0.18, (0.9, 0.7, 0.5, 1)) # Head
+        draw_cylinder(0, 0.7, 0, 0.3, 0.1, 0.1, (0.7, 0.6, 0.2, 1), rx=10) # Hat
+        for lx in [-0.15, 0.15]:
+            glPushMatrix(); glTranslatef(lx, -0.3, 0); glRotatef(math.sin(self.walk_t + (lx*10))*30, 1, 0, 0)
+            draw_cylinder(0, -0.3, 0, 0.08, 0.08, 0.6, (0.05, 0.05, 0.05, 1)); glPopMatrix()
+        glPopMatrix()
+
+farmer = Farmer()
+
+def render_plant(cx2, cz2, ch, ctype, r_offset, sway, stage=1.0):
+    # Scale height and detail by growth stage
+    eff_h = ch * (0.2 + 0.8 * stage)
     glPushMatrix(); glTranslatef(cx2, 0, cz2); glRotatef(sway * 45 + r_offset, 0, 1, 0)
     
     if ctype == "tomato":
-        # Draw wooden stake
-        draw_cylinder(0, ch/2, 0, 0.02, 0.02, ch+0.2, (0.5, 0.4, 0.2, 1), segs=4)
-        # Draw main green stalk wrapping around
-        draw_cylinder(0.02, ch/2 - 0.1, 0.02, 0.03, 0.01, ch, (0.2, 0.5, 0.2, 1), segs=4)
-        # Branches and leaves
-        num_branches = 5
-        for i in range(num_branches):
-            bh = ch * (0.3 + 0.7 * (i/num_branches))
-            glPushMatrix(); glTranslatef(0, bh, 0)
-            ba = i * 137.5
-            glRotatef(ba, 0, 1, 0); glRotatef(40, 1, 0, 0)
-            # Branch stalk
-            draw_cylinder(0, 0.15, 0, 0.015, 0.005, 0.3, (0.2, 0.5, 0.2, 1), segs=3)
-            # Leaf quad
-            glPushMatrix(); glTranslatef(0, 0.3, 0); glRotatef(30, 1, 0, 0)
-            draw_box(0, 0.0, 0, 0.2, 0.02, 0.2, (0.1, 0.4, 0.1, 1))
-            glPopMatrix()
-            # Tomato fruit (red)
-            if i % 2 == 0: # 50% chance of fruit
-                draw_sphere(0.0, 0.1, -0.05, 0.07, (0.8, 0.1, 0.1, 1), stacks=4, slices=5)
-            glPopMatrix()
+        draw_cylinder(0, eff_h/2, 0, 0.02, 0.02, eff_h+0.1, (0.5, 0.4, 0.2, 1), segs=4)
+        draw_cylinder(0.02, eff_h/2 - 0.05, 0.02, 0.02, 0.01, eff_h, (0.2, 0.5, 0.2, 1), segs=4)
+        if stage > 0.4:
+            for i in range(int(5 * stage)):
+                bh = eff_h * (0.3 + 0.6 * (i/5))
+                glPushMatrix(); glTranslatef(0, bh, 0); glRotatef(i * 137.5, 0, 1, 0); glRotatef(40, 1, 0, 0)
+                draw_cylinder(0, 0.1, 0, 0.01, 0.005, 0.2, (0.2, 0.5, 0.2, 1))
+                if stage > 0.8 and i % 2 == 0: draw_sphere(0.0, 0.1, -0.05, 0.06, (0.8, 0.1, 0.1, 1), stacks=4, slices=5)
+                glPopMatrix()
             
-    elif ctype == "wheat":
-        # Group of 3 swaying golden stalks
-        for w_i in range(3):
-            glPushMatrix()
-            rx, rz = math.cos(w_i*120)*0.08, math.sin(w_i*120)*0.08
-            glTranslatef(rx, 0, rz)
-            # Bend physics
-            glRotatef(sway * 60, 0, 0, 1)
-            # Straw stalk
-            draw_cylinder(0, ch/2, 0, 0.01, 0.005, ch, (0.8, 0.7, 0.3, 1), segs=3)
-            # Grain head (thickened top)
-            draw_cylinder(0, ch, 0, 0.025, 0.01, 0.2, (0.9, 0.8, 0.2, 1), segs=4)
+    elif ctype == "rice":
+        for w_i in range(int(3 + 3 * stage)):
+            glPushMatrix(); rx, rz = math.cos(w_i*72)*0.05, math.sin(w_i*72)*0.05
+            glTranslatef(rx, 0, rz); glRotatef(sway * 50 + w_i*10, 0, 0, 1)
+            draw_cylinder(0, eff_h/2, 0, 0.008, 0.004, eff_h, (0.4, 0.7, 0.2, 1), segs=3)
+            if stage > 0.7: draw_cylinder(0, eff_h, 0, 0.015, 0.005, 0.15, (0.8, 0.8, 0.4, 1))
             glPopMatrix()
 
-    elif ctype == "cabbage":
-        # Leafy green heads, overlapping shells
-        draw_sphere(0, 0.2, 0, 0.2, (0.5, 0.8, 0.4, 1), stacks=5, slices=6)
-        for i in range(4):
-            glPushMatrix(); glTranslatef(0, 0.2, 0)
-            glRotatef(i * 90 + r_offset, 0, 1, 0)
-            glRotatef(20, 1, 0, 0)
-            draw_box(0, 0.1, 0.15, 0.25, 0.25, 0.03, (0.3, 0.6, 0.3, 1))
+    elif ctype == "onion":
+        num_spikes = int(2 + 3 * stage)
+        for w_i in range(num_spikes):
+            glPushMatrix(); glRotatef(w_i * (360/num_spikes), 0, 1, 0); glRotatef(sway * 30 + 10, 1, 0, 0)
+            draw_cylinder(0, 0.2 * stage, 0, 0.015, 0.002, 0.4 * stage, (0.3, 0.6, 0.2, 1))
             glPopMatrix()
+        if stage > 0.6: draw_sphere(0, 0.04, 0, 0.08, (0.8, 0.5, 0.8, 1))
+
+    elif ctype == "groundnut":
+        for w_i in range(int(2 + 2 * stage)):
+            glPushMatrix(); glRotatef(w_i * 120, 0, 1, 0); glRotatef(60, 1, 0, 0)
+            draw_cylinder(0, 0.15 * stage, 0, 0.02, 0.01, 0.3 * stage, (0.2, 0.5, 0.1, 1))
+            glPopMatrix()
+        draw_sphere(0, 0.08, 0, 0.12 * stage, (0.3, 0.6, 0.2, 1))
 
     glPopMatrix()
 
@@ -384,14 +461,45 @@ def draw_scene(t, mx, my):
     wind = metrics["wind_speed"]
     sway = math.sin(t * 1.4) * (wind / 60.0) * 0.12
 
-    # Ground & Paths
-    draw_plane_textured(35, (0.15, 0.35, 0.14, 1))
-    for z in [-6, 0, 6]: draw_box(0, 0.01, z, 70, 0.01, 1.1, (0.28, 0.19, 0.10, 1))
-    for x in [-6, 0, 6]: draw_box(x, 0.01, 0, 1.1, 0.01, 70, (0.28, 0.19, 0.10, 1))
+    # 🌍 Enhanced Terrain Tiles
+    # Grass Base
+    draw_plane_textured(40, (0.1, 0.3, 0.1, 1), subdivs=20)
+    
+    # Soil Rows (under crops)
+    for row in range(-20, 21, 5):
+        draw_box(row, 0.02, 0, 3.0, 0.01, 40, (0.2, 0.15, 0.1, 1))
+    
+    # Water Channels for Rice
+    if current_crop[0] == "Rice":
+        for rz in range(-20, 21, 10):
+            draw_box(0, 0.03, rz, 40, 0.01, 1.5, (0.2, 0.4, 0.8, 0.6))
 
-    # Crops using realistic layered renderer
-    for (cx2, cz2, ch, ctype, r_off) in CROPS:
-        render_plant(cx2, cz2, ch, ctype, r_off, sway)
+    # ☀️ Sunlight Glow (Day Only)
+    if tod[0] == "day":
+        glDisable(GL_LIGHTING); glDisable(GL_CULL_FACE)
+        for i in range(3):
+            draw_sphere(20, 25, -20, 5 + i*2, (1, 0.9, 0.4, 0.15 - i*0.04))
+        glEnable(GL_LIGHTING)
+
+    # 👨‍🌾 Farmer NPC
+    farmer.draw()
+
+    # Shadows for Animals & Farmer
+    for a in animals: draw_shadow(a.x, a.z, 0.4 if a.type=='cow' else 0.8 if a.type=='elephant' else 0.2)
+    draw_shadow(farmer.x, farmer.z, 0.3)
+    
+    # 🌾 Crops logic (Growth Stage Filter)
+    target_ctype = current_crop[0].lower()
+    for (cx2, cz2, ch, ctype, r_off, stage) in CROPS:
+        if ctype == target_ctype:
+            draw_shadow(cx2, cz2, 0.2 * stage)
+            render_plant(cx2, cz2, ch, ctype, r_off, sway, stage)
+
+    # 🌧️ Atmospherics
+    is_raining = metrics["humidity"] > 88
+    for p in particles: p.update(0.016); p.draw()
+    if is_raining: 
+        for rp in rain_particles: rp.update(0.016); rp.draw()
 
     # Fence & Live Ultrasonic nodes
     FENCE_HALF = 22
@@ -474,6 +582,19 @@ def update_metrics():
     m["lux"]           = fluctuate(m["lux"],         42000.0,  0,80000,400)
     m["blocks"]       += random.randint(0, 2)
 
+    # Drift towards optimal for selected crop
+    cd = CROP_DATA[current_crop[0]]
+    targets = {
+        "temperature": (cd["temp"][0] + cd["temp"][1]) / 2,
+        "humidity": (cd["hum"][0] + cd["hum"][1]) / 2,
+        "soil_moisture": (cd["moist"][0] + cd["moist"][1]) / 2,
+        "soil_ph": (cd["ph"][0] + cd["ph"][1]) / 2
+    }
+    
+    # Apply subtle drift
+    for k, target in targets.items():
+        m[k] = m[k] * 0.98 + target * 0.02
+
 def draw_hud(surface, fonts, t):
     W2, H2 = surface.get_size()
     surface.fill((0, 0, 0, 0))
@@ -482,11 +603,22 @@ def draw_hud(surface, fonts, t):
     C_BG, C_ACT, C_HEAD, C_MUT = (10,20,42,210), (0,200,150), (200,240,210), (90,150,120)
 
     def panel(rx, ry, rw, rh, col=C_BG):
-        s = pygame.Surface((rw, rh), pygame.SRCALPHA); s.fill(col)
-        pygame.draw.rect(s, C_ACT + (120,), (0,0,rw,rh), 1); surface.blit(s, (rx, ry))
+        # Pulsing glass effect
+        pulse = (math.sin(t*3) * 0.5 + 0.5) * 10
+        s = pygame.Surface((rw, rh), pygame.SRCALPHA)
+        pygame.draw.rect(s, (col[0], col[1], col[2], col[3]), (0,0,rw,rh), border_radius=12)
+        # White glow border
+        pygame.draw.rect(s, (255, 255, 255, 40 + int(pulse)), (0,0,rw,rh), 1, border_radius=12)
+        surface.blit(s, (rx, ry))
 
     def label(text, x, y, col=C_HEAD, font=None):
+        # Subtle text drop shadow for depth
+        surface.blit((font or fnt_s).render(text, True, (0,0,0,150)), (x+1, y+1))
         surface.blit((font or fnt_s).render(text, True, col), (x, y))
+
+    # Global Scanlines Effect
+    for y in range(0, H2, 4):
+        pygame.draw.line(surface, (0,0,0,15), (0, y), (W2, y), 1)
 
     def bar(x, y, w, h2, pct, col):
         bg = pygame.Surface((w, h2), pygame.SRCALPHA); bg.fill((30, 50, 40, 160)); surface.blit(bg, (x, y))
@@ -494,9 +626,57 @@ def draw_hud(surface, fonts, t):
         if fw > 0: fb = pygame.Surface((fw, h2), pygame.SRCALPHA); fb.fill(col + (220,)); surface.blit(fb, (x, y))
 
     # Header
-    panel(0, 0, W2, 32, (8, 16, 36, 220))
     header = f"  ◉ KRISHITRACE FARM OS  v3.5    BLOCKCHAIN: {metrics['blocks']:,}    MODE: {tod[0].upper()}    ALARM: {'ON' if alarm_state['active'] else 'STBY'}"
     label(header, 8, 8, C_HEAD, fnt_s)
+
+    # Sidebar - Crop Selection
+    panel(0, 32, sidebar_width, H2-32, (15, 25, 45, 230))
+    label(" CROP SELECTION", 10, 45, C_ACT, fnt_m)
+    pygame.draw.line(surface, C_ACT, (0, 65), (sidebar_width, 65), 1)
+
+    for i, crop in enumerate(CROP_DATA.keys()):
+        by = 80 + i * 50
+        is_sel = (current_crop[0] == crop)
+        btn_col = (30, 50, 80) if is_sel else (20, 30, 50)
+        border_col = C_ACT if is_sel else (60, 80, 100)
+        
+        # Button background
+        pygame.draw.rect(surface, btn_col, (10, by, sidebar_width-20, 40), border_radius=8)
+        pygame.draw.rect(surface, border_col, (10, by, sidebar_width-20, 40), 2, border_radius=8)
+        
+        # Icon and text
+        label(CROP_DATA[crop]["icon"], 20, by+10, (255,255,255), fnt_b)
+        label(crop, 55, by+12, (255,255,255) if is_sel else C_MUT, fnt_m)
+
+    # Optimal Range Indicators for selected crop
+    opt_y = 80 + len(CROP_DATA) * 50 + 20
+    pygame.draw.line(surface, C_MUT, (10, opt_y), (sidebar_width-10, opt_y), 1)
+    
+    # Growth Progress Bar (Aggregated)
+    avg_growth = sum(c[5] for c in CROPS if c[3] == current_crop[0].lower()) / max(1, len([c for c in CROPS if c[3] == current_crop[0].lower()]))
+    label(" GROWTH PROGRESS", 10, opt_y+10, C_MUT, fnt_s)
+    bar(10, opt_y+30, sidebar_width-20, 10, avg_growth, (50, 200, 100))
+    label(f"{int(avg_growth*100)}%", sidebar_width-45, opt_y+28, (255,255,255), fnt_s)
+
+    # Traceability Badge
+    trace_y = opt_y + 60
+    panel(10, trace_y, sidebar_width-20, 70, (20, 40, 60, 180))
+    label("⛓ BLOCKCHAIN VERIFIED", 15, trace_y+8, (100, 255, 200), fnt_s)
+    label(f"ID: #KT-{metrics['blocks']%10000:04}", 15, trace_y+24, (200, 200, 200), fnt_s)
+    label("Status: IMMUTABLE", 15, trace_y+40, (150, 220, 255), fnt_s)
+
+    # Target Ranges
+    range_y = trace_y + 85
+    label(" TARGET RANGES", 10, range_y, C_MUT, fnt_s)
+    cd = CROP_DATA[current_crop[0]]
+    ranges = [
+        (f"Temp: {cd['temp'][0]}-{cd['temp'][1]}°C", (255,130,50)),
+        (f"Hum:  {cd['hum'][0]}-{cd['hum'][1]}%", (56,189,248)),
+        (f"PH:   {cd['ph'][0]}-{cd['ph'][1]}", (163,230,53)),
+        (f"Moist: {cd['moist'][0]}-{cd['moist'][1]}%", (34,197,94)),
+    ]
+    for i, (txt, col) in enumerate(ranges):
+        label(txt, 15, range_y+20+i*20, col, fnt_s)
 
     # Right metrics
     PW, PH = 230, 340; PX = W2 - PW - 10; PY = 40
@@ -605,8 +785,19 @@ def main():
                 if event.key == K_n:
                     tod[0] = TOD_CYCLE[(TOD_CYCLE.index(tod[0])+1) % len(TOD_CYCLE)]
                 if event.key == K_SPACE: cam["auto"] = not cam["auto"]
+                if event.key == K_c: cam["cinematic"] = not cam["cinematic"]
             if event.type == MOUSEBUTTONDOWN:
-                if event.button == 1: drag["left"] = True; drag["lx"], drag["ly"] = event.pos; cam["auto"] = False
+                if event.button == 1:
+                    # Check sidebar clicks
+                    if event.pos[0] < sidebar_width:
+                        for i, crop in enumerate(CROP_DATA.keys()):
+                            by = 80 + i * 50
+                            if by <= event.pos[1] <= by + 40:
+                                current_crop[0] = crop
+                                if blip_sound: blip_sound.play()
+                                break
+                    else:
+                        drag["left"] = True; drag["lx"], drag["ly"] = event.pos; cam["auto"] = False
                 if event.button == 3: drag["right"] = True; drag["lx"], drag["ly"] = event.pos
             if event.type == MOUSEBUTTONUP:
                 if event.button == 1: drag["left"] = False
@@ -621,9 +812,24 @@ def main():
                     cam["cx"] -= (math.cos(t2)*dx - math.sin(t2)*dy) * 0.04
                     cam["cz"] += (math.sin(t2)*dx + math.cos(t2)*dy) * 0.04
             if event.type == MOUSEWHEEL:
-                cam["radius"] = max(8.0, min(80.0, cam["radius"] - event.y * 2.5))
+                cam["target_radius"] = max(8.0, min(80.0, cam["target_radius"] - event.y * 5.0))
 
-        if cam["auto"]: cam["theta"] += 0.004
+        if cam["cinematic"]:
+            cam["auto"] = False
+            cam["theta"] += 0.002
+            cam["target_radius"] = 35.0 + math.sin(now * 0.5) * 10
+            cam["phi"] = 0.6 + math.cos(now * 0.3) * 0.2
+        elif cam["auto"]: cam["theta"] += 0.004
+
+        # Smooth Zoom Interpolation
+        cam["radius"] = cam["radius"] * 0.92 + cam["target_radius"] * 0.08
+
+        # 🕒 Farmer & Growth update
+        farmer.update(dt)
+        for crop in CROPS:
+            # Maturation speed depends on humidity and soil moisture
+            growth_inc = (metrics["humidity"]/100.0 * metrics["soil_moisture"]/100.0) * 0.005 * dt
+            crop[5] = min(1.0, crop[5] + growth_inc)
 
         if now - last_metric[0] > 2.0: update_metrics(); last_metric[0] = now
         alert_state["timer"] += dt
