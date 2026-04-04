@@ -9,7 +9,7 @@ import { useRouter } from 'expo-router';
 import { getGISData, getHarvests } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 
-// Realistic Karnataka Coordinates & Regional Crops for Hackathon Demo
+// Universal Karnataka Location Master (Long, Lat)
 const SAMPLE_FARMS = [
   { _id: 'S1', cropType: 'Mango', farmAddress: 'Kolar, Karnataka', status: 'delivered', farmLocation: { coordinates: [78.13, 13.13] } },
   { _id: 'S2', cropType: 'Sugarcane', farmAddress: 'Mandya, Karnataka', status: 'in_transit', farmLocation: { coordinates: [76.88, 12.52] } },

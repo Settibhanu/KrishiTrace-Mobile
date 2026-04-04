@@ -188,8 +188,6 @@ export default function EquipmentScreen() {
   const { i18n } = useTranslation();
   const lang = (i18n.language || 'en').split('-')[0];
   const text = TEXT[lang] || TEXT.en;
-  const [bookingPlace, setBookingPlace] = useState('');
-  const [bookingUse, setBookingUse] = useState('');
   const [toolName, setToolName] = useState('');
   const [rentPrice, setRentPrice] = useState('');
   const [rentPlace, setRentPlace] = useState('');
@@ -197,8 +195,8 @@ export default function EquipmentScreen() {
   const [bookedEquipment, setBookedEquipment] = useState([]);
 
   const handleBook = (item) => {
-    const bookedFor = bookingPlace.trim() || text.yourVillage;
-    const bookedUse = bookingUse.trim() || text.generalUse;
+    const bookedFor = text.yourVillage;
+    const bookedUse = text.generalUse;
     setBookedEquipment((current) => [{ ...item, bookedFor, bookedUse }, ...current]);
     setAvailableEquipment((current) => current.filter((equipment) => equipment.id !== item.id));
     Alert.alert(text.bookingConfirmed, item.name);
@@ -244,13 +242,6 @@ export default function EquipmentScreen() {
         </View>
       </View>
 
-      <View style={styles.formCard}>
-        <Text style={styles.sectionTitle}>{text.bookingDetails}</Text>
-        <Text style={styles.label}>{text.village}</Text>
-        <TextInput style={styles.input} placeholder={text.villagePh} placeholderTextColor="#7e8c76" value={bookingPlace} onChangeText={setBookingPlace} />
-        <Text style={styles.label}>{text.neededFor}</Text>
-        <TextInput style={styles.input} placeholder={text.neededForPh} placeholderTextColor="#7e8c76" value={bookingUse} onChangeText={setBookingUse} />
-      </View>
 
       <Text style={styles.sectionTitle}>{text.tickets}</Text>
       {availableEquipment.length > 0 ? availableEquipment.map((item) => (

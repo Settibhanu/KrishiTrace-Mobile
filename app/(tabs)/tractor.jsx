@@ -227,8 +227,6 @@ export default function TractorScreen() {
   const { i18n } = useTranslation();
   const lang = (i18n.language || 'en').split('-')[0];
   const text = TEXT[lang] || TEXT.en;
-  const [location, setLocation] = useState('');
-  const [workNeeded, setWorkNeeded] = useState('');
   const [rentLocation, setRentLocation] = useState('');
   const [rentRate, setRentRate] = useState('');
   const [tractorCompany, setTractorCompany] = useState('');
@@ -238,8 +236,8 @@ export default function TractorScreen() {
   const [bookedTractors, setBookedTractors] = useState([]);
 
   const handleBook = (tractor) => {
-    const bookedFor = location.trim() || text.yourArea;
-    const bookedWork = workNeeded.trim() || text.generalWork;
+    const bookedFor = text.yourArea;
+    const bookedWork = text.generalWork;
     setBookedTractors((current) => [{ ...tractor, bookedFor, bookedWork }, ...current]);
     setAvailableTractors((current) => current.filter((item) => item.id !== tractor.id));
     Alert.alert(text.bookingConfirmed, tractor.name);
@@ -297,13 +295,6 @@ export default function TractorScreen() {
         </View>
       </View>
 
-      <View style={styles.formCard}>
-        <Text style={styles.sectionTitle}>{text.bookingDetails}</Text>
-        <Text style={styles.label}>{text.village}</Text>
-        <TextInput style={styles.input} placeholder={text.villagePh} placeholderTextColor="#7e8c76" value={location} onChangeText={setLocation} />
-        <Text style={styles.label}>{text.workNeeded}</Text>
-        <TextInput style={styles.input} placeholder={text.workPh} placeholderTextColor="#7e8c76" value={workNeeded} onChangeText={setWorkNeeded} />
-      </View>
 
       <Text style={styles.sectionTitle}>{text.tickets}</Text>
       {availableTractors.length > 0 ? availableTractors.map((tractor) => (

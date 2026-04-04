@@ -87,11 +87,14 @@ export default function MarketScreen() {
       }
     } catch (_) {
       setPrices([
-        { _id: '1', cropType: 'Mango', location: 'Kolar APMC (KA)', pricePerKg: 75, change: 8.5 },
-        { _id: '2', cropType: 'Sugarcane', location: 'Mandya Market (KA)', pricePerKg: 4, change: 0.2 },
-        { _id: '3', cropType: 'Rice', location: 'Raichur Board (KA)', pricePerKg: 42, change: -1.5 },
-        { _id: '4', cropType: 'Byadagi Chilli', location: 'Haveri Mandi (KA)', pricePerKg: 210, change: 4.2 },
-        { _id: '5', cropType: 'Coffee', location: 'Chikmagalur Hub (KA)', pricePerKg: 380, change: 2.1 },
+        { _id: '1', cropType: 'Mango', location: 'Kolar, Karnataka', pricePerKg: 75, change: 8.5 },
+        { _id: '2', cropType: 'Sugarcane', location: 'Mandya, Karnataka', pricePerKg: 4, change: 0.2 },
+        { _id: '3', cropType: 'Coffee', location: 'Chikmagalur, Karnataka', pricePerKg: 380, change: 2.1 },
+        { _id: '4', cropType: 'Potato', location: 'Hassan, Karnataka', pricePerKg: 28, change: -1.5 },
+        { _id: '5', cropType: 'Byadagi Chilli', location: 'Haveri, Karnataka', pricePerKg: 210, change: 4.2 },
+        { _id: '6', cropType: 'Onion', location: 'Chitradurga, Karnataka', pricePerKg: 35, change: 5.7 },
+        { _id: '7', cropType: 'Grapes', location: 'Vijayapura, Karnataka', pricePerKg: 85, change: -1.2 },
+        { _id: '8', cropType: 'Black Pepper', location: 'Kodagu (Coorg), Karnataka', pricePerKg: 520, change: 1.8 },
       ]);
     }
     setLoading(false);
