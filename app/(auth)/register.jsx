@@ -24,7 +24,7 @@ export default function RegisterScreen() {
     try {
       const res = await register(form);
       const token = res.data?.token || res.data?.data?.token;
-      
+
       if (token) {
         await AsyncStorage.setItem('krishitrace_token', token);
         await AsyncStorage.setItem('krishitrace_mobile', form.mobile.trim());
@@ -116,10 +116,10 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
-  scroll:    { flexGrow: 1, justifyContent: 'center', padding: 20 },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: 20 },
 
   brandArea: { alignItems: 'center', marginBottom: 28 },
-  logo:      { fontSize: 52 },
+  logo: { fontSize: 52 },
   brandName: { fontSize: 28, fontWeight: '800', color: Colors.primary },
 
   card: {
@@ -131,7 +131,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 
-  title:    { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
+  title: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
   subtitle: { fontSize: 13, color: Colors.textSecondary, marginBottom: 20 },
 
   label: { fontSize: 13, color: Colors.textSecondary, marginBottom: 6, marginTop: 12 },
@@ -152,15 +152,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bgInput, borderWidth: 1, borderColor: Colors.border,
     alignItems: 'center',
   },
-  roleBtnActive:     { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  roleBtnText:       { color: Colors.textSecondary, fontSize: 13, fontWeight: '600' },
+  roleBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  roleBtnText: { color: Colors.textSecondary, fontSize: 13, fontWeight: '600' },
   roleBtnTextActive: { color: '#fff' },
 
-  btn:         { backgroundColor: Colors.primary, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
+  btn: { backgroundColor: Colors.primary, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
   btnDisabled: { opacity: 0.6 },
-  btnText:     { color: '#fff', fontSize: 16, fontWeight: '700' },
+  btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  linkBtn:    { alignItems: 'center', marginTop: 16 },
-  linkText:   { color: Colors.textSecondary, fontSize: 14 },
+  linkBtn: { alignItems: 'center', marginTop: 16 },
+  linkText: { color: Colors.textSecondary, fontSize: 14 },
   linkAccent: { color: Colors.primary, fontWeight: '600' },
 });
