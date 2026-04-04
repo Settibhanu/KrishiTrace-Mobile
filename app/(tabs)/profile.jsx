@@ -24,7 +24,7 @@ export default function ProfileScreen() {
   const { i18n } = useTranslation();
   const [email, setEmail] = useState('');
   const langCode = (i18n.language || 'en').split('-')[0];
-  const lang = ['hi', 'te'].includes(langCode) ? langCode : 'en';
+  const lang = ['hi', 'te', 'kn', 'ta'].includes(langCode) ? langCode : 'en';
   const copy = {
     en: {
       headerEyebrow: 'Your farm profile',
@@ -82,6 +82,44 @@ export default function ProfileScreen() {
       cancel: '\u0c30\u0c26\u0c4d\u0c26\u0c41',
       logout: '\u0c32\u0c3e\u0c17\u0c4d\u0c05\u0c09\u0c1f\u0c4d',
       footer: '\u0c26\u0c4d\u0c35\u0c3e\u0c30\u0c3e \u0c28\u0c21\u0c41\u0c38\u0c4d\u0c24\u0c4b\u0c02\u0c26\u0c3f',
+    },
+    kn: {
+      headerEyebrow: 'ನಿಮ್ಮ ಕೃಷಿ ಪ್ರೊಫೈಲ್',
+      headerTitle: 'ಪ್ರೊಫೈಲ್',
+      headerSubtitle: 'ನಿಮ್ಮ ಖಾತೆ ಮತ್ತು ಪರಿಕರಗಳನ್ನು ಒಂದೇ ಸ್ಥಳದಲ್ಲಿ ಇರಿಸಿ.',
+      name: 'KrishiTrace ರೈತ',
+      loggedIn: 'ಲಾಗಿನ್ ಆಗಿದ್ದೀರಿ',
+      verified: 'ಪರಿಶೀಲಿಸಿದ ಖಾತೆ',
+      stats: ['ಬ್ಯಾಚ್‌ಗಳು', 'ಪರಿಶೀಲಿಸಲಾಗಿದೆ', 'ಮಾರುಕಟ್ಟೆಗಳು'],
+      account: 'ಖಾತೆ',
+      accountItems: ['ನನ್ನ ಬೆಳೆಗಳು', 'ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು', 'QR ಸ್ಕ್ಯಾನ್ ಮಾಡಿ'],
+      settings: 'ಸೆಟ್ಟಿಂಗ್‌ಗಳು',
+      settingsItems: ['Vercel API ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ', 'ಗೌಪ್ಯತೆ ನೀತಿ', 'ಅಪ್ಲಿಕೇಶನ್ ಆವೃತ್ತಿ 1.0.0'],
+      signOut: 'ಲಾಗ್ ಔಟ್',
+      signOutTitle: 'ಲಾಗ್ ಔಟ್',
+      signOutConfirm: 'ನೀವು ನಿರ್ಗಮಿಸಲು ಬಯಸುವಿರಾ?',
+      cancel: 'ರದ್ದುಗೊಳಿಸಿ',
+      logout: 'ಲಾಗ್ ಔಟ್',
+      footer: 'ನಿರ್ವಹಣೆ',
+    },
+    ta: {
+      headerEyebrow: 'உங்கள் பண்ணை சுயவிவரம்',
+      headerTitle: 'சுயவிவரம்',
+      headerSubtitle: 'உங்கள் கணக்கு மற்றும் கருவிகளை ஒரே இடத்தில் வைக்கவும்.',
+      name: 'KrishiTrace விவசாயி',
+      loggedIn: 'உள்நுழைந்துள்ளீர்கள்',
+      verified: 'சரிபார்க்கப்பட்ட கணக்கு',
+      stats: ['தொகுப்புகள்', 'சரிபார்க்கப்பட்டது', 'சந்தைகள்'],
+      account: 'கணக்கு',
+      accountItems: ['என் பயிர்கள்', 'சந்தை விலைகள்', 'QR ஸ்கேன் செய்'],
+      settings: 'அமைப்புகள்',
+      settingsItems: ['Vercel API உடன் இணைக்கப்பட்டுள்ளது', 'தனியுரிமை கொள்கை', 'ஆப் பதிப்பு 1.0.0'],
+      signOut: 'வெளியேறு',
+      signOutTitle: 'வெளியேறு',
+      signOutConfirm: 'நிச்சயமாக வெளியேற வேண்டுமா?',
+      cancel: 'ரத்துசெய்',
+      logout: 'வெளியேறு',
+      footer: 'வழங்குவது',
     },
   }[lang] || null;
 

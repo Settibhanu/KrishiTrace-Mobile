@@ -3,6 +3,7 @@ import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
   RefreshControl, TouchableOpacity,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { getReports } from '../../services/api';
 import { Colors } from '../../constants/Colors';
@@ -22,7 +23,7 @@ const CropRow = ({ item }) => {
     <View style={styles.cropRow}>
       <Text style={styles.cropName}>{item._id || 'Unknown'}</Text>
       <View style={styles.cropStats}>
-        <Text style={styles.cropCount}>{item.count} records</Text>
+        <Text style={styles.cropCount}>{item.count} {t?.('reports.records') || 'records'}</Text>
         <View style={[styles.rateBadge, { backgroundColor: color + '22' }]}>
           <Text style={[styles.rateText, { color }]}>{rate}%</Text>
         </View>
@@ -33,6 +34,7 @@ const CropRow = ({ item }) => {
 
 export default function ReportsScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [data, setData]       = useState(null);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -73,38 +75,36 @@ export default function ReportsScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>📊 Reports & Compliance</Text>
-        <Text style={styles.subtitle}>Supply chain analytics</Text>
+        <Text style={styles.title}>📊 {t('reports.title')}</Text>
+        <Text style={styles.subtitle}>{t('reports.subtitle')}</Text>
       </View>
 
       {data?.restricted ? (
         <View style={styles.restrictedCard}>
           <Text style={{ fontSize: 48, textAlign: 'center' }}>🔒</Text>
-          <Text style={styles.restrictedTitle}>FPO Admin Access Required</Text>
+          <Text style={styles.restrictedTitle}>{t('reports.req_title')}</Text>
           <Text style={styles.restrictedText}>
-            Full reports are available for FPO Admin and Operator roles.{'\n'}
-            Log in with your admin account to view compliance analytics.
+            {t('reports.req_sub')}
           </Text>
           <View style={styles.demoBox}>
-            <Text style={styles.demoLabel}>Demo Admin Login</Text>
-            <Text style={styles.demoCredentials}>Mobile: 9000000003{'\n'}Password: demo1234</Text>
+            <Text style={styles.demoLabel}>{t('reports.demo_title')}</Text>
+            <Text style={styles.demoCredentials}>{t('reports.demo_cred')}</Text>
           </View>
         </View>
       ) : data ? (
         <>
           {/* Summary Stats */}
-          <Text style={styles.sectionLabel}>COMPLIANCE SUMMARY</Text>
+          <Text style={styles.sectionLabel}>{t('reports.summary')}</Text>
           <View style={styles.statsGrid}>
-            <StatCard icon="📦" label="Total Records"    value={data.total ?? '—'}             color={Colors.blue}    />
-            <StatCard icon="✅" label="Compliant"        value={data.compliant ?? '—'}          color={Colors.success} />
-            <StatCard icon="⚠️" label="Violations"       value={data.violations ?? '—'}         color={Colors.error}   />
-            <StatCard icon="📈" label="Compliance Rate"  value={`${data.complianceRate ?? 0}%`} color={Colors.gold}    />
+            <StatCard icon="📦" label={t('reports.total')}    value={data.total ?? '—'}             color={Colors.blue}    />
+            <StatCard icon="✅" label={t('reports.compliant')} value={data.compliant ?? '—'}          color={Colors.success} />
+            <StatCard icon="⚠️" label={t('reports.violations')} value={data.violations ?? '—'}         color={Colors.error}   />
+            <StatCard icon="📈" label={t('reports.rate')}       value={`${data.complianceRate ?? 0}%`} color={Colors.gold}    />
           </View>
 
-          {/* Compliance Bar */}
           {data.total > 0 && (
             <>
-              <Text style={styles.sectionLabel}>OVERALL COMPLIANCE</Text>
+              <Text style={styles.sectionLabel}>{t('reports.overall')}</Text>
               <View style={styles.barCard}>
                 <View style={styles.barBg}>
                   <View style={[styles.barFill, {
@@ -112,18 +112,17 @@ export default function ReportsScreen() {
                     backgroundColor: parseFloat(data.complianceRate) >= 80 ? Colors.success : Colors.gold,
                   }]} />
                 </View>
-                <Text style={styles.barText}>{data.complianceRate}% of harvests meet fair price standards</Text>
+                <Text style={styles.barText}>{data.complianceRate}% {t('reports.rate_sub')}</Text>
               </View>
             </>
           )}
 
-          {/* By Crop */}
           {data.byCrop?.length > 0 && (
             <>
-              <Text style={styles.sectionLabel}>BY CROP TYPE</Text>
+              <Text style={styles.sectionLabel}>{t('reports.by_crop')}</Text>
               <View style={styles.cropCard}>
                 {data.byCrop.map((item, i) => (
-                  <CropRow key={item._id || i} item={item} />
+                  <CropRow key={item._id || i} item={item} t={t} />
                 ))}
               </View>
             </>
@@ -132,7 +131,7 @@ export default function ReportsScreen() {
           {/* Violations */}
           {data.violationsList?.length > 0 && (
             <>
-              <Text style={styles.sectionLabel}>RECENT VIOLATIONS</Text>
+              <Text style={styles.sectionLabel}>{t('reports.recent_viol')}</Text>
               {data.violationsList.slice(0, 5).map((v, i) => (
                 <View key={v._id || i} style={[styles.violCard]}>
                   <Text style={styles.violCrop}>{v.cropType}</Text>
@@ -150,7 +149,7 @@ export default function ReportsScreen() {
       ) : (
         <View style={styles.empty}>
           <Text style={{ fontSize: 48 }}>📊</Text>
-          <Text style={styles.emptyText}>No report data available.</Text>
+          <Text style={styles.emptyText}>{t('reports.empty')}</Text>
         </View>
       )}
     </ScrollView>

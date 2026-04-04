@@ -2,6 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 import {
   View, Text, StyleSheet, FlatList, ActivityIndicator, RefreshControl, ScrollView,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { getMarketPrices } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 
@@ -15,7 +16,7 @@ const getCropIcon = (name = '') => {
   return CROP_ICONS[key] || CROP_ICONS.default;
 };
 
-const PriceCard = ({ item }) => {
+const PriceCard = ({ item, t }) => {
   const change = item.priceChange || item.change || 0;
   const isUp = change >= 0;
   const basePrice = item.price || item.pricePerKg || 30;
@@ -50,7 +51,7 @@ const PriceCard = ({ item }) => {
       </View>
 
       <View style={styles.insightSection}>
-        <Text style={styles.insightTitle}>NEIGHBORING FARMERS</Text>
+        <Text style={styles.insightTitle}>{t('market.neighbors')}</Text>
         <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.insightScroll}>
           {friendSales.map((sale, index) => (
             <View key={index} style={styles.insightTag}>
@@ -68,6 +69,7 @@ const PriceCard = ({ item }) => {
 };
 
 export default function MarketScreen() {
+  const { t } = useTranslation();
   const [prices, setPrices] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -85,10 +87,11 @@ export default function MarketScreen() {
       }
     } catch (_) {
       setPrices([
-        { _id: '1', cropType: 'Tomato', location: 'Local Mandi', pricePerKg: 32, change: 2.5 },
-        { _id: '2', cropType: 'Onion', location: 'City Market', pricePerKg: 45, change: -1.2 },
-        { _id: '3', cropType: 'Rice', location: 'State Board', pricePerKg: 55, change: 0.5 },
-        { _id: '4', cropType: 'Mango', location: 'Export Hub', pricePerKg: 80, change: 5.0 },
+        { _id: '1', cropType: 'Mango', location: 'Kolar APMC (KA)', pricePerKg: 75, change: 8.5 },
+        { _id: '2', cropType: 'Sugarcane', location: 'Mandya Market (KA)', pricePerKg: 4, change: 0.2 },
+        { _id: '3', cropType: 'Rice', location: 'Raichur Board (KA)', pricePerKg: 42, change: -1.5 },
+        { _id: '4', cropType: 'Byadagi Chilli', location: 'Haveri Mandi (KA)', pricePerKg: 210, change: 4.2 },
+        { _id: '5', cropType: 'Coffee', location: 'Chikmagalur Hub (KA)', pricePerKg: 380, change: 2.1 },
       ]);
     }
     setLoading(false);
@@ -106,23 +109,23 @@ export default function MarketScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.eyebrow}>Mandi update</Text>
-        <Text style={styles.title}>Market Prices</Text>
-        <Text style={styles.subtitle}>Live crop rates in a simple farmer-friendly view.</Text>
+        <Text style={styles.eyebrow}>{t('market.eyebrow')}</Text>
+        <Text style={styles.title}>{t('market.title')}</Text>
+        <Text style={styles.subtitle}>{t('market.subtitle')}</Text>
       </View>
 
       <View style={styles.banner}>
-        <Text style={styles.bannerText}>🌾 {prices.length} crops tracked · Updated just now</Text>
+        <Text style={styles.bannerText}>🌾 {t('market.banner', { count: prices.length })}</Text>
       </View>
 
       <FlatList
         data={prices}
         keyExtractor={(item, index) => item._id || String(index)}
-        renderItem={({ item }) => <PriceCard item={item} />}
+        renderItem={({ item }) => <PriceCard item={item} t={t} />}
         ListEmptyComponent={(
           <View style={styles.empty}>
             <Text style={styles.emptyIcon}>📊</Text>
-            <Text style={styles.emptyText}>No market data available yet.</Text>
+            <Text style={styles.emptyText}>{t('market.empty')}</Text>
           </View>
         )}
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={load} tintColor={Colors.primary} />}

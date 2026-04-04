@@ -4,6 +4,7 @@ import {
   ActivityIndicator, ScrollView, Alert,
 } from 'react-native';
 import { CameraView, useCameraPermissions } from 'expo-camera';
+import { useTranslation } from 'react-i18next';
 import { getQRData } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 import blockchain from '../../services/blockchain';
@@ -82,6 +83,7 @@ const getDemoBatch = (id) => {
 
 export default function ScanScreen() {
   const [permission, requestPermission] = useCameraPermissions();
+  const { t } = useTranslation();
   const [scanning, setScanning] = useState(false);
   const [result, setResult] = useState(null);
   const [loading, setLoading] = useState(false);
@@ -136,10 +138,10 @@ export default function ScanScreen() {
     return (
       <View style={styles.center}>
         <Text style={styles.heroIcon}>📷</Text>
-        <Text style={styles.permTitle}>Camera Access Required</Text>
-        <Text style={styles.permSubtitle}>KrishiTrace needs camera access to scan QR codes on harvest batches.</Text>
+        <Text style={styles.permTitle}>{t('scan.cam_title')}</Text>
+        <Text style={styles.permSubtitle}>{t('scan.cam_desc')}</Text>
         <TouchableOpacity style={styles.permBtn} onPress={requestPermission}>
-          <Text style={styles.permBtnText}>Grant Permission</Text>
+          <Text style={styles.permBtnText}>{t('scan.cam_grant')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -150,8 +152,8 @@ export default function ScanScreen() {
       <ScrollView style={styles.container} contentContainerStyle={styles.resultContent}>
         <View style={styles.resultHeader}>
           <Text style={styles.resultIcon}>✅</Text>
-          <Text style={styles.resultTitle}>Trace Found</Text>
-          <Text style={styles.resultSubtitle}>Supply chain verified in KrishiTrace records</Text>
+          <Text style={styles.resultTitle}>{t('scan.res_title')}</Text>
+          <Text style={styles.resultSubtitle}>{t('scan.res_sub')}</Text>
         </View>
 
         {chainStatus && (
@@ -166,28 +168,28 @@ export default function ScanScreen() {
             <Text style={styles.chainIcon}>{chainStatus.isValid ? '✅' : '❌'}</Text>
             <View style={{ flex: 1 }}>
               <Text style={[styles.chainTitle, { color: chainStatus.isValid ? Colors.success : Colors.error }]}>
-                {chainStatus.isValid ? 'Blockchain Verified' : 'Chain Integrity Broken'}
+                {chainStatus.isValid ? t('scan.block_ok') : t('scan.block_bad')}
               </Text>
               <Text style={styles.chainSub}>
-                {chainStatus.totalBlocks} blocks · {chainStatus.harvestBlocks} harvests on chain
+                {t('scan.block_desc', { blocks: chainStatus.totalBlocks, harvests: chainStatus.harvestBlocks })}
               </Text>
             </View>
           </View>
         )}
 
-        <Section title="Crop Information">
+        <Section title={t('scan.sec_crop')}>
           <Row label="Crop" value={result.cropType || result.crop || '—'} />
           <Row label="Quantity" value={`${result.quantity || '—'} ${result.unit || 'kg'}`} />
           <Row label="Status" value={result.status || '—'} highlight />
         </Section>
 
-        <Section title="Origin">
+        <Section title={t('scan.sec_origin')}>
           <Row label="Location" value={result.location || '—'} />
           <Row label="Harvest Date" value={result.harvestDate ? new Date(result.harvestDate).toDateString() : '—'} />
         </Section>
 
         {result.farmerName && (
-          <Section title="Farmer Information">
+          <Section title={t('scan.sec_farmer')}>
             <Row label="Farmer" value={result.farmerName || '—'} />
             <Row label="Farm Size" value={result.farmSize || '—'} />
             <Row label="Method" value={result.farmingMethod || '—'} />
@@ -201,7 +203,7 @@ export default function ScanScreen() {
         )}
 
         {result.ledger && (
-          <Section title="Ledger">
+          <Section title={t('scan.sec_ledger')}>
             <Row label="Block Hash" value={result.ledger.hash || '—'} mono />
             <Row label="Timestamp" value={result.ledger.timestamp ? new Date(result.ledger.timestamp).toLocaleString() : '—'} />
             <Row label="Verified By" value={result.ledger.verifiedBy || '—'} />
@@ -209,7 +211,7 @@ export default function ScanScreen() {
         )}
 
         {result.iot && (
-          <Section title="IoT Sensor Data">
+          <Section title={t('scan.sec_iot')}>
             <Row label="Temperature" value={result.iot.temperature ? `${result.iot.temperature}°C` : '—'} />
             <Row label="Humidity" value={result.iot.humidity ? `${result.iot.humidity}%` : '—'} />
           </Section>
@@ -219,7 +221,7 @@ export default function ScanScreen() {
           style={styles.scanAgainBtn}
           onPress={() => { setResult(null); setScanned(false); setScanning(true); }}
         >
-          <Text style={styles.scanAgainText}>Scan Another QR</Text>
+          <Text style={styles.scanAgainText}>{t('scan.scan_again')}</Text>
         </TouchableOpacity>
       </ScrollView>
     );
@@ -235,16 +237,16 @@ export default function ScanScreen() {
         />
         <View style={styles.overlay}>
           <View style={styles.scanFrame} />
-          <Text style={styles.scanHint}>Point camera at a KrishiTrace QR code</Text>
+          <Text style={styles.scanHint}>{t('scan.hint_point')}</Text>
         </View>
         {loading && (
           <View style={styles.loadingOverlay}>
             <ActivityIndicator size="large" color={Colors.primary} />
-            <Text style={styles.scanHint}>Fetching trace data...</Text>
+            <Text style={styles.scanHint}>{t('scan.hint_fetch')}</Text>
           </View>
         )}
         <TouchableOpacity style={styles.cancelScanBtn} onPress={() => setScanning(false)}>
-          <Text style={styles.cancelScanText}>Cancel</Text>
+          <Text style={styles.cancelScanText}>{t('scan.cancel')}</Text>
         </TouchableOpacity>
       </View>
     );
@@ -253,18 +255,18 @@ export default function ScanScreen() {
   return (
     <View style={styles.center}>
       <Text style={styles.heroIcon}>📷</Text>
-      <Text style={styles.scanTitle}>QR Trace Scanner</Text>
+      <Text style={styles.scanTitle}>{t('scan.title')}</Text>
       <Text style={styles.scanSubtitle}>
-        Scan any KrishiTrace QR code to view the full farm-to-table supply chain trace.
+        {t('scan.subtitle')}
       </Text>
       <View style={styles.tipCard}>
-        <Text style={styles.tipTitle}>Farmer tip</Text>
+        <Text style={styles.tipTitle}>{t('scan.tip_title')}</Text>
         <Text style={styles.tipText}>
-          Use this at mandi pickup or delivery time to quickly confirm crop history and trust.
+          {t('scan.tip_desc')}
         </Text>
       </View>
       <TouchableOpacity style={styles.startBtn} onPress={() => setScanning(true)}>
-        <Text style={styles.startBtnText}>Start Scanning</Text>
+        <Text style={styles.startBtnText}>{t('scan.start')}</Text>
       </TouchableOpacity>
     </View>
   );

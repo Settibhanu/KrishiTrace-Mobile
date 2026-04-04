@@ -3,11 +3,12 @@ import {
   View, Text, StyleSheet, FlatList, ActivityIndicator,
   RefreshControl, TouchableOpacity,
 } from 'react-native';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { getLedger } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 
-const LedgerCard = ({ item }) => {
+const LedgerCard = ({ item, t }) => {
   const compliant = item.fairPriceCompliant;
   return (
     <View style={styles.card}>
@@ -18,7 +19,7 @@ const LedgerCard = ({ item }) => {
         </View>
         <View style={[styles.badge, { backgroundColor: compliant ? Colors.success + '22' : Colors.error + '22' }]}>
           <Text style={[styles.badgeText, { color: compliant ? Colors.success : Colors.error }]}>
-            {compliant ? '✅ Compliant' : '⚠️ Violation'}
+            {compliant ? `✅ ${t('ledger.compliant')}` : `⚠️ ${t('ledger.violation')}`}
           </Text>
         </View>
       </View>
@@ -26,19 +27,19 @@ const LedgerCard = ({ item }) => {
       <View style={styles.divider} />
 
       <View style={styles.row}>
-        <Text style={styles.metaLabel}>Quantity</Text>
+        <Text style={styles.metaLabel}>{t('ledger.qty')}</Text>
         <Text style={styles.metaValue}>{item.quantity} {item.unit || 'kg'}</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.metaLabel}>Farmer Payout</Text>
+        <Text style={styles.metaLabel}>{t('ledger.farmer')}</Text>
         <Text style={[styles.metaValue, { color: Colors.gold }]}>₹{item.payoutBreakdown?.farmerPayout}/kg</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.metaLabel}>Consumer Price</Text>
+        <Text style={styles.metaLabel}>{t('ledger.consumer')}</Text>
         <Text style={styles.metaValue}>₹{item.payoutBreakdown?.finalConsumerPrice}/kg</Text>
       </View>
       <View style={styles.row}>
-        <Text style={styles.metaLabel}>Date</Text>
+        <Text style={styles.metaLabel}>{t('ledger.date')}</Text>
         <Text style={styles.metaValue}>
           {item.createdAt ? new Date(item.createdAt).toLocaleDateString('en-IN') : '—'}
         </Text>
@@ -46,7 +47,7 @@ const LedgerCard = ({ item }) => {
 
       {item.txHash && (
         <View style={styles.txBox}>
-          <Text style={styles.txLabel}>🔗 TX Hash</Text>
+          <Text style={styles.txLabel}>🔗 {t('ledger.tx')}</Text>
           <Text style={styles.txHash} numberOfLines={1}>{item.txHash}</Text>
         </View>
       )}
@@ -56,6 +57,7 @@ const LedgerCard = ({ item }) => {
 
 export default function LedgerScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [records, setRecords] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -88,19 +90,19 @@ export default function LedgerScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>🔗 Ledger</Text>
-        <Text style={styles.subtitle}>{total} records on chain</Text>
+        <Text style={styles.title}>🔗 {t('ledger.title')}</Text>
+        <Text style={styles.subtitle}>{t('ledger.subtitle', { count: total })}</Text>
       </View>
 
       <FlatList
         data={records}
         keyExtractor={(item, i) => item._id || String(i)}
-        renderItem={({ item }) => <LedgerCard item={item} />}
+        renderItem={({ item }) => <LedgerCard item={item} t={t} />}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={{ fontSize: 48 }}>🔗</Text>
-            <Text style={styles.emptyText}>No ledger records yet.</Text>
-            <Text style={styles.emptySubText}>Submit a harvest to create your first ledger entry.</Text>
+            <Text style={styles.emptyText}>{t('ledger.empty')}</Text>
+            <Text style={styles.emptySubText}>{t('ledger.empty_sub')}</Text>
           </View>
         }
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={Colors.primary} />}

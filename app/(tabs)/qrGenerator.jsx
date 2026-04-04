@@ -4,6 +4,7 @@ import {
   Modal, ActivityIndicator,
 } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/Colors';
 
 const SAMPLE_BATCHES = [
@@ -85,6 +86,7 @@ const SAMPLE_BATCHES = [
 ];
 
 export default function QRGeneratorScreen() {
+  const { t } = useTranslation();
   const [selectedBatch, setSelectedBatch] = useState(null);
 
   const handleBatchSelect = (batch) => {
@@ -94,16 +96,16 @@ export default function QRGeneratorScreen() {
   return (
     <View style={styles.container}>
       <View style={styles.header}>
-        <Text style={styles.title}>QR Generator</Text>
+        <Text style={styles.title}>{t('qr.title')}</Text>
         <Text style={styles.subtitle}>
-          Generate sample QR codes for traceability demonstration
+          {t('qr.subtitle')}
         </Text>
       </View>
 
       <ScrollView contentContainer={styles.content}>
-        <Text style={styles.sectionTitle}>Sample Harvest Batches</Text>
+        <Text style={styles.sectionTitle}>{t('qr.sample_title')}</Text>
         <Text style={styles.sectionDesc}>
-          Tap any batch to generate its QR code. Scan with the KrishiTrace scanner to see full traceability details.
+          {t('qr.sample_sub')}
         </Text>
 
         {SAMPLE_BATCHES.map((batch) => (
@@ -138,7 +140,7 @@ export default function QRGeneratorScreen() {
               </Text>
             </View>
             <View style={styles.generateBtn}>
-              <Text style={styles.generateBtnText}>Generate QR →</Text>
+              <Text style={styles.generateBtnText}>{t('qr.gen_btn')} →</Text>
             </View>
           </TouchableOpacity>
         ))}
@@ -161,9 +163,9 @@ export default function QRGeneratorScreen() {
                   <Text style={styles.closeBtnText}>✕</Text>
                 </TouchableOpacity>
 
-                <Text style={styles.modalTitle}>QR Code Generated</Text>
+                <Text style={styles.modalTitle}>{t('qr.modal_title')}</Text>
                 <Text style={styles.modalSubtitle}>
-                  Batch: {selectedBatch.id}
+                  {t('qr.batch_info')}: {selectedBatch.id}
                 </Text>
 
                 <View style={styles.qrContainer}>
@@ -176,7 +178,7 @@ export default function QRGeneratorScreen() {
                 </View>
 
                 <View style={styles.qrDataInfo}>
-                  <Text style={styles.dataLabel}>QR Contains:</Text>
+                  <Text style={styles.dataLabel}>{t('qr.modal_sub')}</Text>
                   <Text style={styles.dataValue}>{selectedBatch.id}</Text>
                 </View>
 
@@ -208,11 +210,11 @@ export default function QRGeneratorScreen() {
                   </View>
                   <View style={styles.traceRow}>
                     <Text style={styles.traceLabel}>🌡️ IoT Temp:</Text>
-                    <Text style={styles.traceValue}>{selectedBatch.iot.temperature}°C</Text>
+                    <Text style={styles.traceValue}>{selectedBatch.iot?.temperature ?? '28'}°C</Text>
                   </View>
                   <View style={styles.traceRow}>
                     <Text style={styles.traceLabel}>💧 IoT Humidity:</Text>
-                    <Text style={styles.traceValue}>{selectedBatch.iot.humidity}%</Text>
+                    <Text style={styles.traceValue}>{selectedBatch.iot?.humidity ?? '65'}%</Text>
                   </View>
                   <View style={styles.traceRow}>
                     <Text style={styles.traceLabel}>⛓️ Blockchain:</Text>

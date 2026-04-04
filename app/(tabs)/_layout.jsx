@@ -54,6 +54,7 @@ export default function TabsLayout() {
       <Tabs.Screen name="gis"       options={{ href: null }} />
       <Tabs.Screen name="tractor"   options={{ href: null }} />
       <Tabs.Screen name="equipment" options={{ href: null }} />
+      <Tabs.Screen name="qrGenerator" options={{ href: null }} />
     </Tabs>
   );
 }

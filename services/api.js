@@ -24,6 +24,11 @@ export const login = (mobile, password) =>
 export const register = (data) =>
   api.post('/auth/register', data);
 
+export const getMe = () => api.get('/auth/me');
+
+export const updateProfile = (data) =>
+  api.patch('/auth/profile', data);
+
 // ── HARVEST ───────────────────────────────────────────
 export const getHarvests = () => api.get('/harvest');
 export const addHarvest = (data) => api.post('/harvest', data);

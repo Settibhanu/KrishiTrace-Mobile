@@ -4,27 +4,34 @@ import {
   Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { register } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'farmer' });
+  const [form, setForm] = useState({ name: '', mobile: '', password: '', role: 'farmer' });
   const [loading, setLoading] = useState(false);
 
   const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleRegister = async () => {
-    if (!form.name || !form.email || !form.password) {
+    if (!form.name || !form.mobile || !form.password) {
       Alert.alert('Missing Fields', 'Please fill all fields.');
       return;
     }
     setLoading(true);
     try {
-      await register(form);
-      Alert.alert('Success!', 'Account created. Please login.', [
-        { text: 'Login', onPress: () => router.replace('/(auth)/login') },
-      ]);
+      const res = await register(form);
+      const token = res.data?.token || res.data?.data?.token;
+      
+      if (token) {
+        await AsyncStorage.setItem('krishitrace_token', token);
+        await AsyncStorage.setItem('krishitrace_mobile', form.mobile.trim());
+      }
+
+      // Personalize for Karnataka niche
+      router.replace('/(auth)/setup');
     } catch (err) {
       const msg = err?.response?.data?.message || 'Registration failed.';
       Alert.alert('Error', msg);
@@ -51,7 +58,7 @@ export default function RegisterScreen() {
 
           {[
             { label: 'Full Name', key: 'name', placeholder: 'Ravi Kumar' },
-            { label: 'Email', key: 'email', placeholder: 'ravi@example.com', keyboard: 'email-address' },
+            { label: 'Mobile Number', key: 'mobile', placeholder: '9000000001', keyboard: 'phone-pad' },
             { label: 'Password', key: 'password', placeholder: '••••••••', secure: true },
           ].map(({ label, key, placeholder, keyboard, secure }) => (
             <View key={key}>
@@ -63,7 +70,7 @@ export default function RegisterScreen() {
                 value={form[key]}
                 onChangeText={set(key)}
                 keyboardType={keyboard || 'default'}
-                autoCapitalize={key === 'email' ? 'none' : 'words'}
+                autoCapitalize={key === 'password' ? 'none' : 'words'}
                 secureTextEntry={secure}
               />
             </View>

@@ -4,10 +4,11 @@ import {
   RefreshControl, TouchableOpacity, Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { getIoTReadings } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 
-const ReadingCard = ({ item }) => {
+const ReadingCard = ({ item, t }) => {
   const hasAlert = item.alert;
   const alertColor = item.alertType === 'temperature' ? Colors.error : Colors.warning;
 
@@ -29,7 +30,7 @@ const ReadingCard = ({ item }) => {
           }]}>
             {item.temperature != null ? `${item.temperature}°C` : '—'}
           </Text>
-          <Text style={styles.sensorLabel}>Temperature</Text>
+          <Text style={styles.sensorLabel}>{t('iot.temperature')}</Text>
         </View>
 
         <View style={styles.sensorDivider} />
@@ -42,7 +43,7 @@ const ReadingCard = ({ item }) => {
           }]}>
             {item.humidity != null ? `${item.humidity}%` : '—'}
           </Text>
-          <Text style={styles.sensorLabel}>Humidity</Text>
+          <Text style={styles.sensorLabel}>{t('iot.humidity')}</Text>
         </View>
 
         <View style={styles.sensorDivider} />
@@ -53,9 +54,9 @@ const ReadingCard = ({ item }) => {
           <Text style={[styles.sensorValue, {
             color: item.animalDetected ? Colors.error : Colors.success,
           }]}>
-            {item.animalDetected ? 'ALERT' : 'SAFE'}
+            {item.animalDetected ? t('iot.alert_status') : t('iot.safe_status')}
           </Text>
-          <Text style={styles.sensorLabel}>Perimeter</Text>
+          <Text style={styles.sensorLabel}>{t('iot.perimeter')}</Text>
         </View>
       </View>
 
@@ -68,6 +69,7 @@ const ReadingCard = ({ item }) => {
 
 export default function IoTScreen() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [readings, setReadings]   = useState([]);
   const [alerts, setAlerts]       = useState([]);
   const [loading, setLoading]     = useState(true);
@@ -116,15 +118,15 @@ export default function IoTScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>📡 IoT Sensor Data</Text>
-        <Text style={styles.subtitle}>Temperature & humidity monitoring</Text>
+        <Text style={styles.title}>📡 {t('iot.title')}</Text>
+        <Text style={styles.subtitle}>{t('iot.subtitle')}</Text>
       </View>
 
       {/* Alert Summary */}
       {alerts.length > 0 && (
         <View style={styles.alertSummary}>
           <Text style={styles.alertSummaryText}>
-            ⚠️ {alerts.length} active alert{alerts.length > 1 ? 's' : ''} — check readings below
+            ⚠️ {alerts.length} {t('iot.active_alerts')}
           </Text>
         </View>
       )}
@@ -133,27 +135,27 @@ export default function IoTScreen() {
       <View style={styles.statsRow}>
         <View style={styles.statBox}>
           <Text style={styles.statValue}>{readings.length}</Text>
-          <Text style={styles.statLabel}>Total Readings</Text>
+          <Text style={styles.statLabel}>{t('iot.total_readings')}</Text>
         </View>
         <View style={[styles.statBox, { borderColor: Colors.error }]}>
           <Text style={[styles.statValue, { color: Colors.error }]}>{alerts.length}</Text>
-          <Text style={styles.statLabel}>Alerts</Text>
+          <Text style={styles.statLabel}>{t('iot.alerts')}</Text>
         </View>
         <View style={[styles.statBox, { borderColor: Colors.success }]}>
           <Text style={[styles.statValue, { color: Colors.success }]}>{readings.length - alerts.length}</Text>
-          <Text style={styles.statLabel}>Normal</Text>
+          <Text style={styles.statLabel}>{t('iot.normal')}</Text>
         </View>
       </View>
 
       <FlatList
         data={readings}
         keyExtractor={(item, i) => item._id || String(i)}
-        renderItem={({ item }) => <ReadingCard item={item} />}
+        renderItem={({ item }) => <ReadingCard item={item} t={t} />}
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={{ fontSize: 48 }}>📡</Text>
-            <Text style={styles.emptyText}>No IoT readings yet.</Text>
-            <Text style={styles.emptySubText}>Connect sensors to your shipments to start monitoring.</Text>
+            <Text style={styles.emptyText}>{t('iot.empty_title')}</Text>
+            <Text style={styles.emptySubText}>{t('iot.empty_sub')}</Text>
           </View>
         }
         refreshControl={<RefreshControl refreshing={refreshing} onRefresh={() => { setRefreshing(true); load(); }} tintColor={Colors.primary} />}

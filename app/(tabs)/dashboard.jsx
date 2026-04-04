@@ -243,8 +243,18 @@ export default function DashboardScreen() {
       <View style={styles.statusCard}>
         <Text style={styles.statusEmoji}>🌿</Text>
         <View style={styles.statusTextWrap}>
-          <Text style={styles.statusTitle}>{localText.statusHealthy}</Text>
-          <Text style={styles.statusSubtitle}>📍 {latest?.location || localText.locationNotSet}</Text>
+          <Text style={styles.statusTitle}>Karnataka: {localText.statusHealthy}</Text>
+          <Text style={styles.statusSubtitle}>📍 {latest?.location || 'Bangalore, KA'}</Text>
+        </View>
+      </View>
+
+      <View style={styles.seasonalAdvisory}>
+        <Text style={styles.advisoryEmoji}>🚀</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.advisoryTitle}>April Seasonal Tip</Text>
+          <Text style={styles.advisoryText}>
+            Mango harvest peak in Kolar. Check Mandi rates before bulk supply!
+          </Text>
         </View>
       </View>
 
@@ -374,8 +384,16 @@ const styles = StyleSheet.create({
   },
   statusEmoji: { fontSize: 34, marginRight: 14 },
   statusTextWrap: { flex: 1 },
-  statusTitle: { color: '#2d422d', fontSize: 18, fontWeight: '700' },
-  statusSubtitle: { color: '#72806f', fontSize: 14, marginTop: 6 },
+  statusTitle: { color: '#2d422d', fontSize: 16, fontWeight: '700' },
+  statusSubtitle: { color: '#72806f', fontSize: 13, marginTop: 4 },
+  seasonalAdvisory: {
+    backgroundColor: '#fffbe6', padding: 16, borderRadius: 20,
+    flexDirection: 'row', alignItems: 'center', marginBottom: 20,
+    borderWidth: 1, borderColor: '#ffe58f',
+  },
+  advisoryEmoji: { fontSize: 32, marginRight: 12 },
+  advisoryTitle: { fontSize: 15, fontWeight: '800', color: '#856404' },
+  advisoryText: { fontSize: 13, color: '#856404', marginTop: 2, lineHeight: 18 },
   sectionTitle: { color: '#314031', fontSize: 17, fontWeight: '800', marginBottom: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 18 },
   largeCard: {
