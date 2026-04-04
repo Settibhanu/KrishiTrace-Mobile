@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   View, Text, StyleSheet, FlatList, ActivityIndicator,
-  RefreshControl, TouchableOpacity,
+  RefreshControl, TouchableOpacity, Alert
 } from 'react-native';
 import { useRouter } from 'expo-router';
 import { getIoTReadings } from '../../services/api';
@@ -73,7 +73,22 @@ export default function IoTScreen() {
   const [loading, setLoading]     = useState(true);
   const [refreshing, setRefreshing] = useState(false);
 
-  useEffect(() => { load(); }, []);
+  useEffect(() => {
+    load();
+    const interval = setInterval(load, 5000);
+    return () => clearInterval(interval);
+  }, []);
+
+  const latestAnimal = readings[readings.length - 1]?.animalDetected;
+
+  useEffect(() => {
+    if (latestAnimal) {
+      Alert.alert(
+        "🐗 CRITICAL INTRUSION", 
+        "Animal movement detected at the farm perimeter!"
+      );
+    }
+  }, [latestAnimal]);
 
   const load = async () => {
     try {
