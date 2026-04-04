@@ -46,7 +46,7 @@ export default function DashboardScreen() {
       if (h.status === 'fulfilled') setHarvests(h.value.data?.data || h.value.data || []);
       if (m.status === 'fulfilled') setMarket(m.value.data?.data || m.value.data || []);
       if (i.status === 'fulfilled') setIot(i.value.data?.data || i.value.data || []);
-    } catch (_) {}
+    } catch (_) { }
     setLoading(false);
     setRefreshing(false);
   };
@@ -294,7 +294,7 @@ export default function DashboardScreen() {
       <Text style={styles.sectionTitle}>{localText.todayGlance}</Text>
       <View style={styles.statsRow}>
         <SmallStat emoji="🌾" label={localText.harvests} value={harvests.length} />
-        <SmallStat emoji="💹" label={localText.prices} value={market.length} />
+        <SmallStat emoji="📈" label={localText.prices} value={market.length} />
         <SmallStat emoji="📡" label={localText.sensors} value={iot.length} />
       </View>
 
@@ -318,7 +318,7 @@ export default function DashboardScreen() {
       <Text style={styles.sectionTitle}>{localText.moreTools}</Text>
       <View style={styles.grid}>
         <LargeActionCard
-          emoji="💹"
+          emoji="📈"
           title={t('dashboard.market')}
           subtitle={localText.marketSub}
           backgroundColor="#7aa83b"
