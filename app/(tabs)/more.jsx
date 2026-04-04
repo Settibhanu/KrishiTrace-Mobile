@@ -22,7 +22,7 @@ export default function MoreScreen() {
   const router = useRouter();
   const { i18n } = useTranslation();
   const langCode = (i18n.language || 'en').split('-')[0];
-  const lang = ['hi', 'te'].includes(langCode) ? langCode : 'en';
+  const lang = ['hi', 'te', 'kn', 'ta'].includes(langCode) ? langCode : 'en';
   const copy = {
     en: {
       eyebrow: 'Farmer toolbox',
@@ -78,6 +78,42 @@ export default function MoreScreen() {
         ['GIS \u0c2b\u0c3e\u0c30\u0c4d\u0c2e\u0c4d \u0c2e\u0c4d\u0c2f\u0c3e\u0c2a\u0c4d', '\u0c2d\u0c4c\u0c17\u0c4b\u0c33\u0c3f\u0c15 \u0c2b\u0c3e\u0c30\u0c4d\u0c2e\u0c4d \u0c2e\u0c30\u0c3f\u0c2f\u0c41 \u0c36\u0c3f\u0c2a\u0c4d\u200c\u0c2e\u0c46\u0c02\u0c1f\u0c4d \u0c1f\u0c4d\u0c30\u0c3e\u0c15\u0c3f\u0c02\u0c17\u0c4d'],
       ],
     },
+    kn: {
+      eyebrow: 'ರೈತ ಟೂಲ್‌ಬಾಕ್ಸ್',
+      title: 'ಇನ್ನಷ್ಟು ವೈಶಿಷ್ಟ್ಯಗಳು',
+      subtitle: 'ದೈನಂದಿನ ಕೃಷಿ ಕೆಲಸಕ್ಕಾಗಿ ಎಲ್ಲಾ KrishiTrace ಪರಿಕರಗಳು ಒಂದೇ ಸ್ಥಳದಲ್ಲಿ.',
+      heroTitle: 'ಇಂದು ನಿಮಗೆ ಅಗತ್ಯವಿರುವ ಪರಿಕರವನ್ನು ಆಯ್ಕೆಮಾಡಿ',
+      heroSubtitle: 'ಬೆಳೆಗಳನ್ನು ಟ್ರ್ಯಾಕ್ ಮಾಡಿ, ದಾಖಲೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ, ಸಂವೇದಕಗಳನ್ನು ವೀಕ್ಷಿಸಿ ಮತ್ತು ನಕ್ಷೆಗಳನ್ನು ಪರಿಶೀಲಿಸಿ.',
+      section: 'ಪ್ಲಾಟ್‌ಫಾರ್ಮ್ ವೈಶಿಷ್ಟ್ಯಗಳು',
+      bannerTitle: '🔗 ಲೈವ್ ಬ್ಯಾಕೆಂಡ್‌ಗೆ ಸಂಪರ್ಕಗೊಂಡಿದೆ',
+      bannerText: 'ಎಲ್ಲಾ ಡೇಟಾವು ನಿಮ್ಮ ವೆಬ್ ಅಪ್ಲಿಕೇಶನ್‌ನೊಂದಿಗೆ ಸಿಂಕ್ ಆಗುತ್ತದೆ',
+      features: [
+        ['ಬ್ಲಾಕ್ಚೈನ್ ಅನ್ವೇಷಕ', 'ಚೈನ್, ತಿದ್ದುಪಡಿ ಪರೀಕ್ಷೆಗಳು ಮತ್ತು ಬ್ಲಾಕ್ ವಿವರಗಳು'],
+        ['ಮಾರುಕಟ್ಟೆ ಬೆಲೆಗಳು', 'ಎಲ್ಲಾ ಬೆಳೆಗಳಿಗೆ ಲೈವ್ ಎಪಿಎಂಸಿ ದರಗಳು'],
+        ['ಬ್ಲಾಕ್ಚೈನ್ ಲೆಡ್ಜರ್', 'ಪೂರೈಕೆ ಸರಪಳಿ ದಾಖಲೆಗಳು'],
+        ['IoT ಸಂವೇದಕಗಳು', 'ಲೈವ್ ತಾಪಮಾನ ಮತ್ತು ಆರ್ದ್ರತೆ ಎಚ್ಚರಿಕೆಗಳು'],
+        ['ವರದಿಗಳು', 'ಅನುಸರಣೆ ಸಾರಾಂಶ ಮತ್ತು ವಿಶ್ಲೇಷಣೆ'],
+        ['GIS ಕೃಷಿ ನಕ್ಷೆ', 'ಭೌಗೋಳಿಕ ಕೃಷಿ ಮತ್ತು ಸಾಗಣೆ ಟ್ರ್ಯಾಕಿಂಗ್'],
+      ],
+    },
+    ta: {
+      eyebrow: 'விவசாயி டூல்பாக்ஸ்',
+      title: 'மேலும் அம்சங்கள்',
+      subtitle: 'அனைத்து KrishiTrace கருவிகளும் ஒரே இடத்தில்.',
+      heroTitle: 'இன்று உங்களுக்கு தேவையான கருவியை தேர்வு செய்யவும்',
+      heroSubtitle: 'பயிர்களை கண்காணிக்கவும், பதிவுகளை சரிபார்க்கவும், மீட்டர்களை பார்க்கவும்.',
+      section: 'இயங்குதள அம்சங்கள்',
+      bannerTitle: '🔗 லைவ் பேக்கெண்டுடன் இணைக்கப்பட்டுள்ளது',
+      bannerText: 'அனைத்து தரவுகளும் உங்கள் இணையப் பயன்பாட்டுடன் ஒத்திசைகின்றன',
+      features: [
+        ['புளாக்செயின் எக்ஸ்ப்ளோரர்', 'சங்கிலி மற்றும் பிளாக் விவரங்கள்'],
+        ['சந்தை விலைகள்', 'அனைத்து பயிர்களுக்கான நேரடி விலை'],
+        ['புளாக்செயின் லெட்ஜர்', 'விநியோக சங்கிலி பதிவுகள்'],
+        ['IoT சென்சார்கள்', 'நேரடி வெப்பநிலை மற்றும் ஈரப்பதம்'],
+        ['அறிக்கைகள்', 'சுருக்கம் மற்றும் பகுப்பாய்வு'],
+        ['GIS பண்ணை வரைபடம்', 'புவியியல் பண்ணை மற்றும் ஏற்றுமதி'],
+      ],
+    },
   }[lang] || null;
 
   const features = [
@@ -87,6 +123,7 @@ export default function MoreScreen() {
     { icon: '📡', title: copy.features[3][0], subtitle: copy.features[3][1], color: Colors.primary, route: '/(tabs)/iot' },
     { icon: '📊', title: copy.features[4][0], subtitle: copy.features[4][1], color: '#9d7bd8', route: '/(tabs)/reports' },
     { icon: '🗺️', title: copy.features[5][0], subtitle: copy.features[5][1], color: '#f97316', route: '/(tabs)/gis' },
+    { icon: '📱', title: 'QR Generator', subtitle: 'Generate traceability demonstration QR codes', color: '#14b8a6', route: '/(tabs)/qrGenerator' },
   ];
 
   return (

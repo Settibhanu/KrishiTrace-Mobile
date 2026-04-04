@@ -4,27 +4,34 @@ import {
   Alert, ActivityIndicator, KeyboardAvoidingView, Platform, ScrollView,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { register } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 
 export default function RegisterScreen() {
   const router = useRouter();
-  const [form, setForm] = useState({ name: '', email: '', password: '', role: 'farmer' });
+  const [form, setForm] = useState({ name: '', mobile: '', password: '', role: 'farmer' });
   const [loading, setLoading] = useState(false);
 
   const set = (key) => (val) => setForm((f) => ({ ...f, [key]: val }));
 
   const handleRegister = async () => {
-    if (!form.name || !form.email || !form.password) {
+    if (!form.name || !form.mobile || !form.password) {
       Alert.alert('Missing Fields', 'Please fill all fields.');
       return;
     }
     setLoading(true);
     try {
-      await register(form);
-      Alert.alert('Success!', 'Account created. Please login.', [
-        { text: 'Login', onPress: () => router.replace('/(auth)/login') },
-      ]);
+      const res = await register(form);
+      const token = res.data?.token || res.data?.data?.token;
+
+      if (token) {
+        await AsyncStorage.setItem('krishitrace_token', token);
+        await AsyncStorage.setItem('krishitrace_mobile', form.mobile.trim());
+      }
+
+      // Personalize for Karnataka niche
+      router.replace('/(auth)/setup');
     } catch (err) {
       const msg = err?.response?.data?.message || 'Registration failed.';
       Alert.alert('Error', msg);
@@ -51,7 +58,7 @@ export default function RegisterScreen() {
 
           {[
             { label: 'Full Name', key: 'name', placeholder: 'Ravi Kumar' },
-            { label: 'Email', key: 'email', placeholder: 'ravi@example.com', keyboard: 'email-address' },
+            { label: 'Mobile Number', key: 'mobile', placeholder: '9000000001', keyboard: 'phone-pad' },
             { label: 'Password', key: 'password', placeholder: '••••••••', secure: true },
           ].map(({ label, key, placeholder, keyboard, secure }) => (
             <View key={key}>
@@ -63,7 +70,7 @@ export default function RegisterScreen() {
                 value={form[key]}
                 onChangeText={set(key)}
                 keyboardType={keyboard || 'default'}
-                autoCapitalize={key === 'email' ? 'none' : 'words'}
+                autoCapitalize={key === 'password' ? 'none' : 'words'}
                 secureTextEntry={secure}
               />
             </View>
@@ -109,10 +116,10 @@ export default function RegisterScreen() {
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.bg },
-  scroll:    { flexGrow: 1, justifyContent: 'center', padding: 20 },
+  scroll: { flexGrow: 1, justifyContent: 'center', padding: 20 },
 
   brandArea: { alignItems: 'center', marginBottom: 28 },
-  logo:      { fontSize: 52 },
+  logo: { fontSize: 52 },
   brandName: { fontSize: 28, fontWeight: '800', color: Colors.primary },
 
   card: {
@@ -124,7 +131,7 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 
-  title:    { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
+  title: { fontSize: 22, fontWeight: '700', color: Colors.textPrimary, marginBottom: 4 },
   subtitle: { fontSize: 13, color: Colors.textSecondary, marginBottom: 20 },
 
   label: { fontSize: 13, color: Colors.textSecondary, marginBottom: 6, marginTop: 12 },
@@ -145,15 +152,15 @@ const styles = StyleSheet.create({
     backgroundColor: Colors.bgInput, borderWidth: 1, borderColor: Colors.border,
     alignItems: 'center',
   },
-  roleBtnActive:     { backgroundColor: Colors.primary, borderColor: Colors.primary },
-  roleBtnText:       { color: Colors.textSecondary, fontSize: 13, fontWeight: '600' },
+  roleBtnActive: { backgroundColor: Colors.primary, borderColor: Colors.primary },
+  roleBtnText: { color: Colors.textSecondary, fontSize: 13, fontWeight: '600' },
   roleBtnTextActive: { color: '#fff' },
 
-  btn:         { backgroundColor: Colors.primary, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
+  btn: { backgroundColor: Colors.primary, borderRadius: 12, paddingVertical: 16, alignItems: 'center', marginTop: 24 },
   btnDisabled: { opacity: 0.6 },
-  btnText:     { color: '#fff', fontSize: 16, fontWeight: '700' },
+  btnText: { color: '#fff', fontSize: 16, fontWeight: '700' },
 
-  linkBtn:    { alignItems: 'center', marginTop: 16 },
-  linkText:   { color: Colors.textSecondary, fontSize: 14 },
+  linkBtn: { alignItems: 'center', marginTop: 16 },
+  linkText: { color: Colors.textSecondary, fontSize: 14 },
   linkAccent: { color: Colors.primary, fontWeight: '600' },
 });

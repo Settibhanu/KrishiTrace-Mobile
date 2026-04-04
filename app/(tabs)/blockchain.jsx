@@ -5,6 +5,7 @@ import {
   Animated, Alert, Easing,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useTranslation } from 'react-i18next';
 import { Colors } from '../../constants/Colors';
 import blockchain from '../../services/blockchain';
 
@@ -12,7 +13,7 @@ import blockchain from '../../services/blockchain';
 const shortHash = (h) => h ? `${h.slice(0, 8)}…${h.slice(-8)}` : '—';
 
 // ── Mining Animation Component ──
-const MiningOverlay = ({ visible, onDone }) => {
+const MiningOverlay = ({ visible, onDone, t }) => {
   const spinAnim = useRef(new Animated.Value(0)).current;
   const [fakeHash, setFakeHash] = useState('');
 
@@ -46,8 +47,8 @@ const MiningOverlay = ({ visible, onDone }) => {
     <View style={miningStyles.overlay}>
       <View style={miningStyles.card}>
         <Animated.Text style={[miningStyles.icon, { transform: [{ rotate: spin }] }]}>⛏️</Animated.Text>
-        <Text style={miningStyles.title}>Mining Block...</Text>
-        <Text style={miningStyles.subtitle}>Computing SHA-256 hash</Text>
+        <Text style={miningStyles.title}>{t?.('bc.mining_title') || 'Mining Block...'}</Text>
+        <Text style={miningStyles.subtitle}>{t?.('bc.mining_sub') || 'Computing SHA-256 hash'}</Text>
         <View style={miningStyles.hashBox}>
           <Text style={miningStyles.hashText} numberOfLines={2}>{fakeHash}</Text>
         </View>
@@ -68,7 +69,7 @@ const MiningOverlay = ({ visible, onDone }) => {
 };
 
 // ── Block Detail Modal ──
-const BlockDetailModal = ({ block, visible, onClose, chainValid }) => {
+const BlockDetailModal = ({ block, visible, onClose, chainValid, t }) => {
   if (!block) return null;
 
   const isTampered = block.data?._tampered === true;
@@ -88,32 +89,32 @@ const BlockDetailModal = ({ block, visible, onClose, chainValid }) => {
                 Block #{block.index}
               </Text>
               <Text style={detailStyles.headerSub}>
-                {isGenesis ? 'Genesis Block' : isTampered ? 'Tampered Block' : 'Valid Block'}
+                {isGenesis ? t?.('bc.block_gen') : isTampered ? t?.('bc.block_tamper') : t?.('bc.block_valid')}
               </Text>
             </View>
 
             {/* Hash Info */}
             <View style={detailStyles.section}>
-              <Text style={detailStyles.sectionTitle}>🔐 CRYPTOGRAPHIC HASHES</Text>
+              <Text style={detailStyles.sectionTitle}>🔐 {t?.('bc.hash_title')}</Text>
               <View style={detailStyles.hashCard}>
-                <Text style={detailStyles.hashLabel}>Block Hash</Text>
+                <Text style={detailStyles.hashLabel}>{t?.('bc.hash_block')}</Text>
                 <Text style={detailStyles.hashValue}>{block.hash}</Text>
               </View>
               <View style={detailStyles.hashCard}>
-                <Text style={detailStyles.hashLabel}>Previous Hash</Text>
+                <Text style={detailStyles.hashLabel}>{t?.('bc.hash_prev')}</Text>
                 <Text style={detailStyles.hashValue}>{block.previousHash}</Text>
               </View>
               <View style={detailStyles.hashCard}>
-                <Text style={detailStyles.hashLabel}>Nonce</Text>
+                <Text style={detailStyles.hashLabel}>{t?.('bc.nonce')}</Text>
                 <Text style={[detailStyles.hashValue, { color: Colors.gold }]}>{block.nonce}</Text>
               </View>
             </View>
 
             {/* Timestamp */}
             <View style={detailStyles.section}>
-              <Text style={detailStyles.sectionTitle}>⏰ TIMESTAMP</Text>
+              <Text style={detailStyles.sectionTitle}>⏰ {t?.('bc.time_title')}</Text>
               <View style={detailStyles.infoRow}>
-                <Text style={detailStyles.infoLabel}>Created</Text>
+                <Text style={detailStyles.infoLabel}>{t?.('bc.time_created')}</Text>
                 <Text style={detailStyles.infoValue}>
                   {new Date(block.timestamp).toLocaleString()}
                 </Text>
@@ -122,7 +123,7 @@ const BlockDetailModal = ({ block, visible, onClose, chainValid }) => {
 
             {/* Block Data */}
             <View style={detailStyles.section}>
-              <Text style={detailStyles.sectionTitle}>📦 BLOCK DATA</Text>
+              <Text style={detailStyles.sectionTitle}>📦 {t?.('bc.data_title')}</Text>
               <View style={detailStyles.dataCard}>
                 <Text style={detailStyles.dataJson}>
                   {JSON.stringify(block.data, null, 2)}
@@ -142,19 +143,17 @@ const BlockDetailModal = ({ block, visible, onClose, chainValid }) => {
                 <Text style={[detailStyles.statusTitle, {
                   color: isTampered ? Colors.error : Colors.success
                 }]}>
-                  {isTampered ? 'Hash Mismatch Detected' : 'Hash Verified'}
+                  {isTampered ? t?.('bc.status_tamper') : t?.('bc.status_valid')}
                 </Text>
                 <Text style={detailStyles.statusSub}>
-                  {isTampered
-                    ? 'This block\'s data has been modified after creation. The hash no longer matches.'
-                    : 'Block hash matches computed hash. Data integrity confirmed.'}
+                  {isTampered ? t?.('bc.status_tamper_sub') : t?.('bc.status_valid_sub')}
                 </Text>
               </View>
             </View>
           </ScrollView>
 
           <TouchableOpacity style={detailStyles.closeBtn} onPress={onClose}>
-            <Text style={detailStyles.closeBtnText}>Close</Text>
+            <Text style={detailStyles.closeBtnText}>{t?.('qr.close') || 'Close'}</Text>
           </TouchableOpacity>
         </View>
       </View>
@@ -165,6 +164,7 @@ const BlockDetailModal = ({ block, visible, onClose, chainValid }) => {
 // ── Main Blockchain Explorer Screen ──
 export default function BlockchainExplorer() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [chain, setChain] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -310,9 +310,9 @@ export default function BlockchainExplorer() {
 
           {/* Type */}
           <Text style={[styles.blockType, { color: blockColor }]}>
-            {isGenesis ? '🌱 Genesis' :
+            {isGenesis ? `🌱 ${t('bc.block_gen')}` :
               item.data?.type === 'HARVEST_CREATED' ? `🌾 ${item.data.cropType || 'Harvest'}` :
-                isTampered ? '⚠️ Tampered' : item.data?.type || 'Data'}
+                isTampered ? `⚠️ ${t('bc.block_tamper')}` : item.data?.type || 'Data'}
           </Text>
 
           {/* Harvest info */}
@@ -341,7 +341,7 @@ export default function BlockchainExplorer() {
           </Text>
 
           {/* Tap hint */}
-          <Text style={styles.tapHint}>tap to inspect →</Text>
+          <Text style={styles.tapHint}>{t('bc.tap_hint')}</Text>
         </View>
       </TouchableOpacity>
     );
@@ -374,9 +374,9 @@ export default function BlockchainExplorer() {
           </View>
 
           <Text style={[styles.blockType, { color: blockColor }]}>
-            {isGenesis ? '🌱 Genesis' :
+            {isGenesis ? `🌱 ${t('bc.block_gen')}` :
               item.data?.type === 'HARVEST_CREATED' ? `🌾 ${item.data.cropType || 'Harvest'}` :
-                isTampered ? '⚠️ Tampered' : item.data?.type || 'Data'}
+                isTampered ? `⚠️ ${t('bc.block_tamper')}` : item.data?.type || 'Data'}
           </Text>
 
           <View style={styles.listHashRow}>
@@ -396,8 +396,8 @@ export default function BlockchainExplorer() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>🔐 Blockchain Explorer</Text>
-        <Text style={styles.subtitle}>Local chain simulation</Text>
+        <Text style={styles.title}>🔐 {t('bc.title')}</Text>
+        <Text style={styles.subtitle}>{t('bc.subtitle')}</Text>
       </View>
 
       {/* Chain Status Banner */}
@@ -411,10 +411,13 @@ export default function BlockchainExplorer() {
             <Text style={[styles.statusTitle, {
               color: validation.valid ? Colors.success : Colors.error
             }]}>
-              {validation.valid ? 'Chain Valid' : 'Chain Broken!'}
+              {validation.valid ? t('bc.chain_valid') : t('bc.chain_broken')}
             </Text>
             <Text style={styles.statusSub}>
-              {stats?.totalBlocks || 0} blocks · {stats?.harvestBlocks || 0} harvests
+              {t('bc.stats', { 
+                blocks: stats?.totalBlocks || 0, 
+                harvests: stats?.harvestBlocks || 0 
+              })}
               {!validation.valid ? ` · Break at #${validation.brokenAt}` : ''}
             </Text>
           </View>
@@ -428,7 +431,7 @@ export default function BlockchainExplorer() {
           onPress={handleTamperTest}
         >
           <Text style={styles.actionIcon}>🔓</Text>
-          <Text style={[styles.actionText, { color: Colors.error }]}>Tamper Test</Text>
+          <Text style={[styles.actionText, { color: Colors.error }]}>{t('bc.btn_tamper')}</Text>
         </TouchableOpacity>
 
         {!validation.valid && (
@@ -437,7 +440,7 @@ export default function BlockchainExplorer() {
             onPress={handleRestore}
           >
             <Text style={styles.actionIcon}>🔧</Text>
-            <Text style={[styles.actionText, { color: Colors.success }]}>Restore Chain</Text>
+            <Text style={[styles.actionText, { color: Colors.success }]}>{t('bc.btn_restore')}</Text>
           </TouchableOpacity>
         )}
 
@@ -447,7 +450,7 @@ export default function BlockchainExplorer() {
         >
           <Text style={styles.actionIcon}>{viewMode === 'timeline' ? '📋' : '⏳'}</Text>
           <Text style={[styles.actionText, { color: Colors.blue }]}>
-            {viewMode === 'timeline' ? 'List View' : 'Timeline'}
+            {viewMode === 'timeline' ? t('bc.btn_view') : t('bc.btn_view')}
           </Text>
         </TouchableOpacity>
 
@@ -456,7 +459,7 @@ export default function BlockchainExplorer() {
           onPress={handleReset}
         >
           <Text style={styles.actionIcon}>🗑️</Text>
-          <Text style={[styles.actionText, { color: Colors.textMuted }]}>Reset</Text>
+          <Text style={[styles.actionText, { color: Colors.textMuted }]}>{t('bc.btn_reset')}</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -469,8 +472,8 @@ export default function BlockchainExplorer() {
         ListEmptyComponent={
           <View style={styles.empty}>
             <Text style={{ fontSize: 48 }}>🔗</Text>
-            <Text style={styles.emptyText}>No blocks yet</Text>
-            <Text style={styles.emptySubText}>Add a harvest to create your first block</Text>
+            <Text style={styles.emptyText}>{t('bc.empty')}</Text>
+            <Text style={styles.emptySubText}>{t('bc.empty_sub')}</Text>
           </View>
         }
         refreshControl={
@@ -489,10 +492,11 @@ export default function BlockchainExplorer() {
         visible={detailModal}
         onClose={() => setDetailModal(false)}
         chainValid={validation.valid}
+        t={t}
       />
 
       {/* Mining Animation */}
-      <MiningOverlay visible={mining} onDone={() => setMining(false)} />
+      <MiningOverlay visible={mining} onDone={() => setMining(false)} t={t} />
     </View>
   );
 }

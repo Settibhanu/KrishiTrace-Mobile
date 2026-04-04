@@ -1,15 +1,29 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import {
   View, Text, StyleSheet, ScrollView, ActivityIndicator,
-  RefreshControl, TouchableOpacity,
+  RefreshControl, TouchableOpacity, Dimensions,
 } from 'react-native';
+import MapView, { Marker, PROVIDER_GOOGLE } from 'react-native-maps';
+import { useTranslation } from 'react-i18next';
 import { useRouter } from 'expo-router';
 import { getGISData, getHarvests } from '../../services/api';
 import { Colors } from '../../constants/Colors';
 
-// Simple visual farm location card (no Google Maps key needed)
-const FarmCard = ({ item }) => (
-  <View style={styles.farmCard}>
+// Realistic Karnataka Coordinates & Regional Crops for Hackathon Demo
+const SAMPLE_FARMS = [
+  { _id: 'S1', cropType: 'Mango', farmAddress: 'Kolar, Karnataka', status: 'delivered', farmLocation: { coordinates: [78.13, 13.13] } },
+  { _id: 'S2', cropType: 'Sugarcane', farmAddress: 'Mandya, Karnataka', status: 'in_transit', farmLocation: { coordinates: [76.88, 12.52] } },
+  { _id: 'S3', cropType: 'Coffee', farmAddress: 'Chikmagalur, Karnataka', status: 'delivered', farmLocation: { coordinates: [75.77, 13.31] } },
+  { _id: 'S4', cropType: 'Potato', farmAddress: 'Hassan, Karnataka', status: 'pending', farmLocation: { coordinates: [76.10, 13.00] } },
+  { _id: 'S5', cropType: 'Byadagi Chilli', farmAddress: 'Haveri, Karnataka', status: 'in_transit', farmLocation: { coordinates: [75.46, 14.79] } },
+  { _id: 'S6', cropType: 'Onion', farmAddress: 'Chitradurga, Karnataka', status: 'delivered', farmLocation: { coordinates: [76.40, 14.22] } },
+  { _id: 'S7', cropType: 'Grapes', farmAddress: 'Vijayapura, Karnataka', status: 'pending', farmLocation: { coordinates: [75.71, 16.83] } },
+  { _id: 'S8', cropType: 'Black Pepper', farmAddress: 'Kodagu (Coorg), Karnataka', status: 'in_transit', farmLocation: { coordinates: [75.73, 12.42] } },
+];
+
+// Simple visual farm location card
+const FarmCard = ({ item, onPress }) => (
+  <TouchableOpacity style={styles.farmCard} onPress={onPress}>
     <View style={styles.farmDot} />
     <View style={styles.farmInfo}>
       <Text style={styles.farmCrop}>{item.cropType || item.crop || 'Crop'}</Text>
@@ -26,11 +40,13 @@ const FarmCard = ({ item }) => (
       backgroundColor: item.status === 'delivered' ? Colors.success :
                        item.status === 'in_transit' ? Colors.gold : Colors.blue,
     }]} />
-  </View>
+  </TouchableOpacity>
 );
 
 export default function GISScreen() {
+  const { t } = useTranslation();
   const router = useRouter();
+  const mapRef = useRef(null);
   const [farms, setFarms]       = useState([]);
   const [loading, setLoading]   = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -52,10 +68,43 @@ export default function GISScreen() {
       if (!data.length && harvestRes.status === 'fulfilled') {
         data = harvestRes.value.data?.data || harvestRes.value.data || [];
       }
-      setFarms(data);
+
+      // If coordinates are [0, 0] or missing, use Sample Data for professional demo
+      const sanitizedData = data.map((item, index) => {
+        const coords = item.farmLocation?.coordinates;
+        const sample = SAMPLE_FARMS[index % SAMPLE_FARMS.length];
+        
+        // If it's a "dummy" or invalid location, override everything for regional consistency
+        if (!coords || (coords[0] === 0 && coords[1] === 0)) {
+          return { 
+            ...item, 
+            farmLocation: sample.farmLocation,
+            farmAddress: sample.farmAddress,
+            cropType: sample.cropType
+          };
+        }
+        return item;
+      });
+
+      // Combine with sample data if list is small to make the map look busy
+      const finalData = sanitizedData.length > 0 ? sanitizedData : SAMPLE_FARMS;
+      
+      setFarms(finalData);
     } catch (_) {}
     setLoading(false);
     setRefreshing(false);
+  };
+
+  const zoomToFarm = (item) => {
+    const coords = item.farmLocation?.coordinates;
+    if (!coords || coords.length < 2) return;
+    
+    mapRef.current?.animateToRegion({
+      latitude: coords[1],
+      longitude: coords[0],
+      latitudeDelta: 0.05,
+      longitudeDelta: 0.05,
+    }, 1000);
   };
 
   // Group by location
@@ -84,39 +133,54 @@ export default function GISScreen() {
         <TouchableOpacity onPress={() => router.back()} style={styles.backBtn}>
           <Text style={styles.backText}>‹ Back</Text>
         </TouchableOpacity>
-        <Text style={styles.title}>🗺️ GIS Farm Tracker</Text>
-        <Text style={styles.subtitle}>Geographic farm & shipment locations</Text>
+        <Text style={styles.title}>🗺️ {t('gis.title')}</Text>
+        <Text style={styles.subtitle}>{t('gis.subtitle')}</Text>
       </View>
 
-      {/* Visual Map Placeholder */}
-      <View style={styles.mapPlaceholder}>
-        <Text style={styles.mapBg}>🌍</Text>
+      {/* Interactive Map View */}
+      <View style={styles.mapContainer}>
+        <MapView
+          ref={mapRef}
+          // provider={PROVIDER_GOOGLE} // Uncomment for Google Maps specifically
+          style={styles.map}
+          initialRegion={{
+            latitude: 14.5,
+            longitude: 76.5,
+            latitudeDelta: 6.0,
+            longitudeDelta: 6.0,
+          }}
+          userInterfaceStyle="dark"
+        >
+          {farms.map((item, i) => {
+            const coords = item.farmLocation?.coordinates;
+            if (!coords || coords.length < 2) return null;
+            return (
+              <Marker
+                key={item._id || i}
+                coordinate={{ latitude: coords[1], longitude: coords[0] }}
+                title={item.cropType || 'Farm'}
+                description={item.farmAddress || 'Harvest Location'}
+                pinColor={Colors.primary}
+              />
+            );
+          })}
+        </MapView>
         <View style={styles.mapOverlay}>
-          <Text style={styles.mapTitle}>Farm Location Map</Text>
-          <Text style={styles.mapSubtitle}>{farms.length} farms tracked</Text>
-          {/* Simulated farm pins */}
-          <View style={styles.pinsRow}>
-            {Object.entries(locationGroups).slice(0, 4).map(([loc, count]) => (
-              <View key={loc} style={styles.pin}>
-                <Text style={styles.pinEmoji}>📍</Text>
-                <Text style={styles.pinLabel} numberOfLines={1}>{loc.split(',')[0]}</Text>
-                <Text style={styles.pinCount}>{count}</Text>
-              </View>
-            ))}
-          </View>
+          <Text style={styles.mapTitle}>{t('gis.map_title')}</Text>
+          <Text style={styles.mapSubtitle}>{t('gis.map_sub', { count: farms.length })}</Text>
         </View>
       </View>
 
       {/* Location Summary */}
       {Object.keys(locationGroups).length > 0 && (
         <>
-          <Text style={styles.sectionLabel}>FARM LOCATIONS</Text>
+          <Text style={styles.sectionLabel}>{t('gis.loc_title')}</Text>
           <View style={styles.locationsCard}>
             {Object.entries(locationGroups).map(([loc, count]) => (
               <View key={loc} style={styles.locRow}>
                 <Text style={styles.locIcon}>📍</Text>
                 <Text style={styles.locName}>{loc}</Text>
-                <Text style={styles.locCount}>{count} batch{count > 1 ? 'es' : ''}</Text>
+                <Text style={styles.locCount}>{count} {t('gis.batches')}</Text>
               </View>
             ))}
           </View>
@@ -126,9 +190,13 @@ export default function GISScreen() {
       {/* All Records */}
       {farms.length > 0 && (
         <>
-          <Text style={styles.sectionLabel}>ALL FARM RECORDS</Text>
+          <Text style={styles.sectionLabel}>{t('gis.all_title')}</Text>
           {farms.map((item, i) => (
-            <FarmCard key={item._id || i} item={item} />
+            <FarmCard 
+              key={item._id || i} 
+              item={item} 
+              onPress={() => zoomToFarm(item)}
+            />
           ))}
         </>
       )}
@@ -136,9 +204,9 @@ export default function GISScreen() {
       {farms.length === 0 && (
         <View style={styles.empty}>
           <Text style={{ fontSize: 48 }}>🗺️</Text>
-          <Text style={styles.emptyText}>No farm locations yet.</Text>
+          <Text style={styles.emptyText}>{t('gis.empty_title')}</Text>
           <Text style={styles.emptySubText}>
-            Add your farm address during registration or when logging a harvest.
+            {t('gis.empty_sub')}
           </Text>
         </View>
       )}
@@ -146,7 +214,7 @@ export default function GISScreen() {
       {/* Note */}
       <View style={styles.noteBox}>
         <Text style={styles.noteText}>
-          💡 Full interactive map with satellite view available in the KrishiTrace Web App at krishitrace-one.vercel.app
+          {t('gis.note')}
         </Text>
       </View>
     </ScrollView>
@@ -167,16 +235,19 @@ const styles = StyleSheet.create({
   title:    { fontSize: 22, fontWeight: '800', color: Colors.textPrimary },
   subtitle: { color: Colors.textSecondary, fontSize: 13, marginTop: 2 },
 
-  // Map Placeholder
-  mapPlaceholder: {
-    marginHorizontal: 16, height: 200, borderRadius: 20, overflow: 'hidden',
-    backgroundColor: '#0d2137', marginBottom: 24, borderWidth: 1, borderColor: Colors.border,
-    justifyContent: 'center', alignItems: 'center',
+  // Map Styles
+  mapContainer: {
+    marginHorizontal: 16, height: 250, borderRadius: 20, overflow: 'hidden',
+    backgroundColor: Colors.bgCard, marginBottom: 24, borderWidth: 1, borderColor: Colors.border,
   },
-  mapBg:      { position: 'absolute', fontSize: 120, opacity: 0.1 },
-  mapOverlay: { width: '100%', alignItems: 'center', padding: 16 },
-  mapTitle:   { color: Colors.textPrimary, fontSize: 18, fontWeight: '800' },
-  mapSubtitle:{ color: Colors.primary, fontSize: 13, marginTop: 4, marginBottom: 16 },
+  map: { width: '100%', height: '100%' },
+  mapOverlay: { 
+    position: 'absolute', top: 10, left: 10, 
+    backgroundColor: 'rgba(10, 22, 40, 0.8)', padding: 10, borderRadius: 12,
+    borderWidth: 1, borderColor: Colors.border,
+  },
+  mapTitle:   { color: Colors.textPrimary, fontSize: 14, fontWeight: '800' },
+  mapSubtitle:{ color: Colors.primary, fontSize: 11, marginTop: 2 },
   pinsRow:    { flexDirection: 'row', justifyContent: 'center', gap: 16, flexWrap: 'wrap' },
   pin:        { alignItems: 'center', backgroundColor: Colors.bgCard + 'cc', borderRadius: 12, padding: 8, minWidth: 64 },
   pinEmoji:   { fontSize: 20 },

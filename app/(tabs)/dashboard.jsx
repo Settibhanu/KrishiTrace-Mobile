@@ -46,7 +46,7 @@ export default function DashboardScreen() {
       if (h.status === 'fulfilled') setHarvests(h.value.data?.data || h.value.data || []);
       if (m.status === 'fulfilled') setMarket(m.value.data?.data || m.value.data || []);
       if (i.status === 'fulfilled') setIot(i.value.data?.data || i.value.data || []);
-    } catch (_) {}
+    } catch (_) { }
     setLoading(false);
     setRefreshing(false);
   };
@@ -243,8 +243,18 @@ export default function DashboardScreen() {
       <View style={styles.statusCard}>
         <Text style={styles.statusEmoji}>🌿</Text>
         <View style={styles.statusTextWrap}>
-          <Text style={styles.statusTitle}>{localText.statusHealthy}</Text>
-          <Text style={styles.statusSubtitle}>📍 {latest?.location || localText.locationNotSet}</Text>
+          <Text style={styles.statusTitle}>Karnataka: {localText.statusHealthy}</Text>
+          <Text style={styles.statusSubtitle}>📍 {latest?.location || 'Bangalore, KA'}</Text>
+        </View>
+      </View>
+
+      <View style={styles.seasonalAdvisory}>
+        <Text style={styles.advisoryEmoji}>🚀</Text>
+        <View style={{ flex: 1 }}>
+          <Text style={styles.advisoryTitle}>April Seasonal Tip</Text>
+          <Text style={styles.advisoryText}>
+            Mango harvest peak in Kolar. Check Mandi rates before bulk supply!
+          </Text>
         </View>
       </View>
 
@@ -284,7 +294,7 @@ export default function DashboardScreen() {
       <Text style={styles.sectionTitle}>{localText.todayGlance}</Text>
       <View style={styles.statsRow}>
         <SmallStat emoji="🌾" label={localText.harvests} value={harvests.length} />
-        <SmallStat emoji="💹" label={localText.prices} value={market.length} />
+        <SmallStat emoji="📈" label={localText.prices} value={market.length} />
         <SmallStat emoji="📡" label={localText.sensors} value={iot.length} />
       </View>
 
@@ -308,7 +318,7 @@ export default function DashboardScreen() {
       <Text style={styles.sectionTitle}>{localText.moreTools}</Text>
       <View style={styles.grid}>
         <LargeActionCard
-          emoji="💹"
+          emoji="📈"
           title={t('dashboard.market')}
           subtitle={localText.marketSub}
           backgroundColor="#7aa83b"
@@ -374,8 +384,16 @@ const styles = StyleSheet.create({
   },
   statusEmoji: { fontSize: 34, marginRight: 14 },
   statusTextWrap: { flex: 1 },
-  statusTitle: { color: '#2d422d', fontSize: 18, fontWeight: '700' },
-  statusSubtitle: { color: '#72806f', fontSize: 14, marginTop: 6 },
+  statusTitle: { color: '#2d422d', fontSize: 16, fontWeight: '700' },
+  statusSubtitle: { color: '#72806f', fontSize: 13, marginTop: 4 },
+  seasonalAdvisory: {
+    backgroundColor: '#fffbe6', padding: 16, borderRadius: 20,
+    flexDirection: 'row', alignItems: 'center', marginBottom: 20,
+    borderWidth: 1, borderColor: '#ffe58f',
+  },
+  advisoryEmoji: { fontSize: 32, marginRight: 12 },
+  advisoryTitle: { fontSize: 15, fontWeight: '800', color: '#856404' },
+  advisoryText: { fontSize: 13, color: '#856404', marginTop: 2, lineHeight: 18 },
   sectionTitle: { color: '#314031', fontSize: 17, fontWeight: '800', marginBottom: 12 },
   grid: { flexDirection: 'row', flexWrap: 'wrap', justifyContent: 'space-between', marginBottom: 18 },
   largeCard: {
